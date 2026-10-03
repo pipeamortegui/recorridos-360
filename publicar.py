@@ -4,6 +4,7 @@ Uso:
     python publicar.py                 pide la contrasena, cifra lo nuevo y deja sitio/ listo
     python publicar.py --subir         ademas hace commit y push (GitHub Pages se actualiza solo)
     python publicar.py --nueva-clave   cambia la contrasena: vuelve a cifrar todo con la nueva
+    python publicar.py --ventana       pide la contrasena en una ventana de Windows (sin terminal)
 
 Que se publica:
   - sitio/index.html, iconos y manifiesto (la app, sin ningun dato del proyecto).
@@ -25,6 +26,7 @@ DATOS = os.path.join(SITIO, "datos")
 ACCESO = os.path.join(DATOS, "acceso.json")
 INDICE = "indice.bin"
 ITER = 400_000
+VENTANA = False
 APP = ["index.html", "manifest.webmanifest", "icono-180.png", "icono-192.png", "icono-512.png"]
 
 
@@ -37,10 +39,57 @@ def descifra(clave, blob):
     return AESGCM(clave).decrypt(blob[:12], blob[12:], None)
 
 
+def pide_clave_ventana(confirmar):
+    """Ventana de Windows para escribir la contrasena (sin terminal)."""
+    import tkinter as tk
+    raiz = tk.Tk()
+    raiz.title("Recorridos 360 · contraseña")
+    raiz.configure(bg="#12181b", padx=24, pady=20)
+    raiz.resizable(False, False)
+    raiz.attributes("-topmost", True)
+    fuente, tenue, texto, oro = ("Segoe UI", 11), "#a3aca9", "#ece7df", "#d9b36c"
+    tk.Label(raiz, text="Contraseña de acceso a los recorridos", font=("Segoe UI", 13, "bold"), bg="#12181b", fg=texto).pack(anchor="w")
+    tk.Label(raiz, text=("Mínimo 10 caracteres. Mejor una frase de 3 o 4 palabras.\nGuárdala bien: si se olvida, hay que publicar con una nueva."
+                         if confirmar else "Escribe la contraseña con la que publicaste."),
+             font=("Segoe UI", 10), bg="#12181b", fg=tenue, justify="left").pack(anchor="w", pady=(4, 12))
+    campos = []
+    for etiqueta in (["Contraseña", "Repítela"] if confirmar else ["Contraseña"]):
+        tk.Label(raiz, text=etiqueta, font=("Segoe UI", 10), bg="#12181b", fg=tenue).pack(anchor="w")
+        e = tk.Entry(raiz, show="•", font=fuente, width=34, bg="#0c1012", fg=texto, insertbackground=texto, relief="flat",
+                     highlightthickness=1, highlightbackground="#3a4245", highlightcolor=oro)
+        e.pack(fill="x", ipady=6, pady=(2, 10)); campos.append(e)
+    error = tk.Label(raiz, text="", font=("Segoe UI", 10), bg="#12181b", fg="#e8a08a"); error.pack(anchor="w")
+    res = {"pw": None}
+
+    def aceptar(_=None):
+        v = [c.get() for c in campos]
+        if confirmar and len(v[0]) < 10:
+            error.config(text="Usa al menos 10 caracteres."); return
+        if confirmar and v[0] != v[1]:
+            error.config(text="Las dos no coinciden."); return
+        if not v[0]:
+            return
+        res["pw"] = v[0]; raiz.destroy()
+
+    tk.Button(raiz, text="Cifrar y guardar", command=aceptar, font=("Segoe UI", 11, "bold"), bg=oro, fg="#1a1408",
+              activebackground="#e6c588", relief="flat", padx=16, pady=6).pack(anchor="e", pady=(8, 0))
+    raiz.bind("<Return>", aceptar)
+    raiz.update_idletasks()
+    x = (raiz.winfo_screenwidth() - raiz.winfo_width()) // 2; y = (raiz.winfo_screenheight() - raiz.winfo_height()) // 3
+    raiz.geometry(f"+{x}+{y}")
+    raiz.after(200, lambda: (raiz.focus_force(), campos[0].focus_set()))
+    raiz.mainloop()
+    if not res["pw"]:
+        sys.exit("Cancelado: no se cambio nada.")
+    return res["pw"]
+
+
 def pide_clave(confirmar):
     pw = os.environ.get("RECORRIDOS360_CLAVE")
     if pw:
         return pw
+    if VENTANA:
+        return pide_clave_ventana(confirmar)
     pw = getpass.getpass("Contrasena de acceso: ")
     if confirmar:
         if len(pw) < 10:
@@ -54,7 +103,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--subir", action="store_true", help="hacer commit y push al terminar")
     ap.add_argument("--nueva-clave", action="store_true", help="cambiar la contrasena y volver a cifrar todo")
+    ap.add_argument("--ventana", action="store_true", help="pedir la contrasena en una ventana en vez de la terminal")
     a = ap.parse_args()
+    global VENTANA
+    VENTANA = a.ventana
 
     catalogo_ruta = os.path.join(RECORRIDOS, "catalogo.json")
     if not os.path.exists(catalogo_ruta):
