@@ -595,12 +595,15 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       $('#bNotas').hidden = !(R.notas && R.notas.length) && !R.ceja;
       $('#notas').hidden = true; $('#bNotas').setAttribute('aria-pressed', 'false');
     }
-    // ---- v2: botones del mueble del punto C.mueble.punto (circulos amarillos); misma proyeccion que los rotulos de salto
-    let CM = null, botonesM = [], anteriorM = 0;
+    // ---- v2: botones del mueble (circulos amarillos); misma proyeccion que los rotulos de salto
+    // v3: C.mueble.locales = varios puntos con estados propios (CENTRO: mueble y puertas; FRENTE: fachada). v2: C.mueble = un solo punto
+    let LOCS = [], CM = null, botonesM = [], anteriorM = 0;
+    function localAqui(){ return LOCS.find(l => l.punto === P[cur].id) || null; }
     function estadoAqui(){ return hay(cur, momento) ? momento : 0; }
     function armaMueble(){
       botonesM = [];
-      if (!CM || P[cur].id !== CM.punto) return;
+      CM = localAqui();
+      if (!CM) return;
       CM.botones.forEach(bt => {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'boton-mueble'; b.dataset.boton = bt.id;
         const d = document.createElement('span'); d.className = 'disco'; d.setAttribute('aria-hidden', 'true');
@@ -638,16 +641,16 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       await cambiaMomento(a);
     }
     function rotulaMueble(m){
-      const el = $('#estadoMueble'), aqui = !!CM && P[cur].id === CM.punto;
-      el.hidden = !aqui;
-      if (aqui) el.textContent = CM.titulos[m] || '';
+      const el = $('#estadoMueble'), L = localAqui();
+      el.hidden = !L || !L.titulos[m];
+      if (L) el.textContent = L.titulos[m] || '';
     }
 
     const momentoEl = $('#momento');
     function armaMomento(){
       const nombres = R.estados_nombres || [];
       momentoEl.innerHTML = nombres.map((t, k) => '<button type="button" data-m="' + k + '">' + esc(t) + '</button>').join('');
-      momentoEl.hidden = nombres.length < 2 || !!CM;      // con mueble, los estados se cambian con los circulos amarillos
+      momentoEl.hidden = nombres.length < 2 || LOCS.length > 0;      // con mueble, los estados se cambian con los circulos amarillos
       momentoEl.querySelectorAll('button').forEach(b => b.addEventListener('click', () => cambiaMomento(+b.dataset.m)));
     }
     let minis = {};
@@ -657,7 +660,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       const m = hay(cur, momento) ? momento : 0;
       momentoEl.querySelectorAll('button').forEach(b => { const k = +b.dataset.m; b.classList.toggle('on', k === m); b.setAttribute('aria-pressed', String(k === m)); b.disabled = !hay(cur, k); });
       tira.querySelectorAll('img[data-i]').forEach(im => { const i = +im.dataset.i, mm = hay(i, momento) ? momento : 0; const u = ruta1(i, mm, 'mini'); if (u) mini(u).then(s => { if (im.getAttribute('src') !== s) im.src = s; }).catch(() => {}); });
-      $('#vCeja').textContent = [R.titulo, R.estados_nombres.length > 1 && !CM ? nombreEstado() : ''].filter(Boolean).join(' · ');
+      $('#vCeja').textContent = [R.titulo, R.estados_nombres.length > 1 && !LOCS.length ? nombreEstado() : ''].filter(Boolean).join(' · ');
       rotulaMueble(m);
     }
 
@@ -812,7 +815,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 
     // ---- abrir / cerrar un recorrido
     function abre(Rn){
-      gen++; R = Rn; C = R.datos; P = C.puntos; CM = C.mueble || null; anteriorM = 0; porId = {}; P.forEach((p, i) => { porId[p.id] = i; });
+      gen++; R = Rn; C = R.datos; P = C.puntos; LOCS = C.mueble ? (C.mueble.locales || [C.mueble]) : []; CM = null; anteriorM = 0; porId = {}; P.forEach((p, i) => { porId[p.id] = i; });
       if (!R.estados_nombres || !R.estados_nombres.length) R.estados_nombres = C.estados || [''];
       cur = (C.inicio in porId) ? porId[C.inicio] : 0; momento = C.momento_inicial || 0;
       yaw = 0; pitch = 0; zoomL = zoomInicial(); ajustaFov(); foco = -1; listo = false; saltando = false; cambiando = false; desfaseGiro = null;
@@ -823,7 +826,10 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       $('#vTitulo').textContent = P[cur].titulo; $('#vTexto').textContent = P[cur].texto || ''; rotulaMomento();
       pista.textContent = tactil ? 'Arrastra para mirar · pellizca para acercar · toca un anillo o una miniatura para saltar · un toque oculta los controles'
                                  : 'Arrastra para mirar · rueda para acercar · clic en un anillo, un rótulo o una miniatura para saltar · teclas 1–' + P.length + ' y flechas';
-      if (CM) { const pm = P[porId[CM.punto]]; pista.textContent += ' · en ' + (pm ? pm.corto : CM.punto) + ', los círculos amarillos cambian el mueble'; }
+      if (LOCS.length) {
+        const donde = LOCS.map(l => { const pm = P[porId[l.punto]]; return pm ? pm.corto : l.punto; });
+        pista.textContent += ' · en ' + (donde.length > 1 ? donde.slice(0, -1).join(', ') + ' y ' + donde[donde.length - 1] : donde[0]) + ', los círculos amarillos cambian la escena';
+      }
       pista.classList.remove('fuera');
       marcas.textContent = '';
       activo = true; tam(); libera(); gl.clearColor(0.047, 0.063, 0.071, 1); gl.clear(gl.COLOR_BUFFER_BIT);
