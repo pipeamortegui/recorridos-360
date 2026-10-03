@@ -1,0 +1,15 @@
+{
+ "name": "Recorridos 360",
+ "short_name": "360",
+ "lang": "es",
+ "start_url": "./",
+ "scope": "./",
+ "display": "fullscreen",
+ "orientation": "any",
+ "background_color": "#0c1012",
+ "theme_color": "#0c1012",
+ "icons": [
+  {"src": "icono-192.png", "sizes": "192x192", "type": "image/png"},
+  {"src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+ ]
+}

@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Recorridos 360">
+<meta name="theme-color" content="#0c1012">
+<meta name="format-detection" content="telephone=no">
+<title>Recorridos 360</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icono-180.png">
+<link rel="icon" type="image/png" href="icono-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+</head>
+<body>
+<style>
+/* Una sola atmosfera oscura a proposito (la de los visores de noche): galeria en columnas que se apilan; visor a pantalla llena con controles flotantes. */
+:root { color-scheme: dark;
+  --fondo:#0c1012; --fondo-2:#11171a; --panel:rgba(12,16,18,.74); --panel-solido:#141b1e; --borde:rgba(236,231,223,.15); --borde-fuerte:rgba(236,231,223,.34);
+  --texto:#ece7df; --tenue:#a3aca9; --acento:#d9b36c; --acento-tinta:#1a1408; --vidrio:#8fc9d4; --deck:rgba(236,231,223,.07);
+  --mueble:rgba(236,231,223,.13); --linea:#ece7df;
+  --sans:"Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; --mono:"IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  --sl:max(16px, env(safe-area-inset-left, 0px)); --sr:max(16px, env(safe-area-inset-right, 0px));
+  --st:env(safe-area-inset-top, 0px); --sb:env(safe-area-inset-bottom, 0px); }
+[hidden] { display:none !important; }
+html, body { margin:0; min-height:100%; background:var(--fondo); color:var(--texto); font:15px/1.5 var(--sans); -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent; }
+body.en-visor { overflow:hidden; height:100%; overscroll-behavior:none; position:fixed; inset:0; }
+button { font:inherit; color:inherit; touch-action:manipulation; }
+button:focus-visible, a:focus-visible, .pt:focus-visible { outline:2px solid var(--acento); outline-offset:2px; }
+.panel { background:var(--panel); border:1px solid var(--borde); border-radius:12px; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); box-sizing:border-box; }
+svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto; }
+
+/* ================= GALERIA ================= */
+#galeria { box-sizing:border-box; max-width:1240px; margin:0 auto; padding:calc(28px + var(--st)) var(--sr) calc(40px + var(--sb)) var(--sl); display:grid; gap:28px; }
+.g-cab { display:grid; gap:6px; }
+.ceja { font-size:11.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--tenue); }
+.g-cab h1 { font-size:clamp(28px, 5vw, 40px); line-height:1.1; margin:0; font-weight:600; letter-spacing:-.01em; text-wrap:balance; }
+.g-cab h1 b { color:var(--acento); font-weight:600; }
+.g-cab p { margin:0; color:var(--tenue); max-width:60ch; }
+.grupo { display:grid; gap:14px; }
+.grupo h2 { margin:0; font-size:13px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--tenue); display:flex; align-items:baseline; gap:10px; }
+.grupo h2 span { font-family:var(--mono); font-weight:400; letter-spacing:0; }
+.tarjetas { list-style:none; margin:0; padding:0; display:grid; gap:16px; grid-template-columns:repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.tarjeta { display:grid; grid-template-rows:auto 1fr; color:inherit; text-decoration:none; background:var(--fondo-2); border:1px solid var(--borde); border-radius:14px; overflow:hidden; transition:border-color .2s ease, transform .2s ease; }
+.tarjeta:hover { border-color:var(--borde-fuerte); }
+.tarjeta:active { transform:scale(.99); }
+.tarjeta .foto { position:relative; aspect-ratio:12/7; max-width:100%; background:#000 center/cover no-repeat; }
+.tarjeta .foto::after { content:"360°"; position:absolute; right:10px; top:10px; font:500 11.5px/1 var(--mono); padding:5px 8px; border-radius:999px; background:rgba(12,16,18,.7); border:1px solid var(--borde); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
+.tarjeta .info { display:grid; gap:6px; padding:14px 16px 16px; align-content:start; min-width:0; }
+.tarjeta h3 { margin:0; font-size:18px; line-height:1.25; font-weight:600; text-wrap:balance; }
+.tarjeta .meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+.chip { font-size:12px; line-height:1; padding:6px 9px; border-radius:999px; border:1px solid var(--borde); color:var(--tenue); white-space:nowrap; }
+.chip.num { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+.tarjeta .entrar { display:none; }
+@media (min-width:860px) {
+  .tarjeta.destacada { grid-column:1 / -1; grid-template-columns:minmax(0, 1.65fr) minmax(0, 1fr); grid-template-rows:none; }
+  .tarjeta.destacada .info { padding:26px 26px 24px; align-content:center; gap:10px; }
+  .tarjeta.destacada h3 { font-size:28px; line-height:1.15; }
+  .tarjeta.destacada .entrar { display:inline-flex; justify-self:start; align-items:center; gap:8px; margin-top:12px; padding:11px 18px; border-radius:999px; background:var(--acento); color:var(--acento-tinta); font-weight:600; font-size:14px; }
+}
+.consejo { display:flex; gap:12px; align-items:flex-start; padding:14px 16px; color:var(--tenue); font-size:13.5px; border-radius:12px; border:1px dashed var(--borde-fuerte); }
+.consejo svg { color:var(--acento); margin-top:1px; }
+.consejo b { color:var(--texto); font-weight:500; }
+.vacio { padding:22px; border-radius:12px; border:1px dashed var(--borde-fuerte); color:var(--tenue); }
+.vacio code { font-family:var(--mono); font-size:13px; color:var(--texto); }
+
+.g-cab .fila { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.salir { display:inline-flex; align-items:center; gap:7px; padding:8px 12px; min-height:40px; box-sizing:border-box; border-radius:999px; border:1px solid var(--borde); background:transparent; color:var(--tenue); font-size:13px; cursor:pointer; }
+.salir:hover { border-color:var(--borde-fuerte); color:var(--texto); }
+.salir svg.ic { width:17px; height:17px; }
+
+/* ================= ENTRADA (contrasena) ================= */
+#entrada { min-height:100vh; min-height:100dvh; box-sizing:border-box; display:grid; place-items:center; padding:calc(24px + var(--st)) var(--sr) calc(24px + var(--sb)) var(--sl); }
+#entrada form { width:min(380px, 100%); display:grid; gap:16px; padding:28px 24px 24px; border-radius:16px; background:var(--fondo-2); border:1px solid var(--borde); box-sizing:border-box; }
+#entrada .sello { width:48px; height:48px; border-radius:50%; display:grid; place-items:center; border:1px solid rgba(217,179,108,.5); color:var(--acento); background:rgba(217,179,108,.08); }
+#entrada h1 { margin:0; font-size:24px; line-height:1.2; font-weight:600; }
+#entrada p { margin:0; color:var(--tenue); font-size:14px; }
+#entrada label.campo { display:grid; gap:6px; font-size:12.5px; color:var(--tenue); }
+#entrada input[type=password] { font:inherit; font-size:16px; color:var(--texto); background:var(--fondo); border:1px solid var(--borde-fuerte); border-radius:10px; padding:12px 14px; min-height:48px; box-sizing:border-box; width:100%; }
+#entrada input[type=password]:focus { outline:2px solid var(--acento); outline-offset:1px; border-color:transparent; }
+#entrada .recordar { display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--tenue); cursor:pointer; min-height:32px; }
+#entrada .recordar input { width:18px; height:18px; accent-color:var(--acento); margin:0; }
+#entrada button[type=submit] { min-height:48px; border:0; border-radius:10px; background:var(--acento); color:var(--acento-tinta); font-weight:600; font-size:15px; cursor:pointer; }
+#entrada button[type=submit]:disabled { opacity:.6; cursor:progress; }
+#entrada .error { color:#e8a08a; font-size:13.5px; min-height:1.4em; }
+
+/* ================= VISOR ================= */
+#visor { position:fixed; inset:0; background:var(--fondo); --tira:96px; }
+#lienzo { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:grab; background:var(--fondo); transition:opacity .22s ease; }
+#lienzo.arrastra { cursor:grabbing; }
+#marcas { position:absolute; inset:0; pointer-events:none; transition:opacity .22s ease; overflow:hidden; }
+.fundido #lienzo, .fundido #marcas { opacity:0; }
+.ui { transition:opacity .25s ease, transform .25s ease; }
+#visor.limpio .ui { opacity:0; pointer-events:none !important; }
+#visor.limpio #marcas { opacity:0; }
+
+#arriba { position:absolute; left:var(--sl); top:calc(12px + var(--st)); display:grid; gap:8px; justify-items:start; max-width:min(520px, calc(100vw - 32px - 64px)); }
+#vcab { display:flex; align-items:stretch; gap:8px; max-width:100%; }
+.redondo { flex:0 0 auto; width:46px; height:46px; display:grid; place-items:center; padding:0; border-radius:12px; cursor:pointer; }
+#titulos { padding:8px 13px 9px; display:grid; gap:2px; min-width:0; }
+#titulos .ceja { font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#titulos h1 { margin:0; font-size:18px; line-height:1.2; font-weight:600; text-wrap:balance; }
+#titulos p { margin:2px 0 0; font-size:12.5px; line-height:1.4; color:var(--tenue); }
+#momento { display:flex; padding:4px; gap:2px; border-radius:999px; flex-wrap:wrap; }
+#momento button { font-size:12.5px; font-weight:500; color:var(--tenue); background:transparent; border:0; border-radius:999px; padding:8px 14px; cursor:pointer; }
+#momento button.on { background:var(--acento); color:var(--acento-tinta); font-weight:600; }
+#momento button:disabled { opacity:.4; cursor:not-allowed; }
+
+#herr { position:absolute; right:var(--sr); top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:6px; padding:6px; border-radius:14px; }
+#herr button { position:relative; width:44px; height:44px; display:grid; place-items:center; padding:0; border:1px solid transparent; border-radius:10px; background:transparent; color:var(--texto); cursor:pointer; }
+#herr button:hover { background:rgba(236,231,223,.08); }
+#herr button[aria-pressed="true"] { color:var(--acento); border-color:rgba(217,179,108,.5); background:rgba(217,179,108,.12); }
+#herr button .et { position:absolute; right:calc(100% + 10px); top:50%; transform:translateY(-50%); white-space:nowrap; font-size:12.5px; padding:5px 9px; border-radius:7px; background:var(--panel-solido); border:1px solid var(--borde); opacity:0; pointer-events:none; transition:opacity .15s ease; }
+@media (hover:hover) { #herr button:hover .et, #herr button:focus-visible .et { opacity:1; } }
+
+#puntos { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(12px + var(--sb)); display:flex; gap:8px; padding:7px; max-width:calc(100vw - 32px); overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
+#puntos::-webkit-scrollbar { display:none; }
+#puntos button { flex:0 0 auto; display:grid; gap:4px; justify-items:center; padding:4px 4px 5px; border-radius:9px; font-size:11.5px; background:transparent; border:1px solid var(--borde); cursor:pointer; }
+#puntos button img { width:96px; height:48px; border-radius:5px; display:block; object-fit:cover; background:#222; }
+#puntos button span { line-height:1.1; padding:0 2px; max-width:96px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#puntos button[aria-current="true"] { border-color:var(--acento); color:var(--acento); font-weight:600; background:rgba(217,179,108,.12); }
+
+#plano { position:absolute; left:var(--sl); bottom:calc(var(--tira) + 24px + var(--sb)); padding:10px 10px 8px; width:min(300px, calc(100vw - 32px - 70px)); }
+#plano svg { display:block; width:100%; height:auto; max-height:calc(100vh - var(--tira) - 220px); }
+#plano .pie { display:flex; justify-content:space-between; gap:8px; font-size:11px; color:var(--tenue); margin-top:5px; }
+#plano .pie span:last-child { font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--texto); white-space:nowrap; }
+.pt { cursor:pointer; outline:none; }
+.pt circle.aro { fill:var(--panel-solido); stroke:var(--acento); }
+.pt.activo circle.aro { fill:var(--acento); }
+.pt text { fill:var(--texto); font-family:var(--sans); font-weight:500; }
+.pt:hover text, .pt:focus-visible text { fill:var(--acento); }
+#cono { fill:var(--acento); fill-opacity:.26; stroke:var(--acento); stroke-opacity:.75; stroke-width:.03; }
+
+.ficha { position:absolute; left:0; top:0; pointer-events:auto; display:flex; align-items:baseline; gap:7px; padding:6px 12px 7px; font-size:13px; font-weight:500; color:var(--texto);
+  background:var(--panel); border:1px solid var(--borde); border-radius:999px; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); white-space:nowrap; will-change:transform; cursor:pointer; }
+.ficha .d { font-family:var(--mono); font-size:11.5px; color:var(--tenue); font-variant-numeric:tabular-nums; }
+.ficha:hover, .ficha:focus-visible { border-color:var(--acento); }
+.ficha.tras { border-style:dashed; color:var(--tenue); }
+.ficha.tras::before { content:"\2197"; font-size:11px; margin-right:-3px; }
+
+#notas { position:absolute; right:calc(var(--sr) + 70px); bottom:calc(var(--tira) + 24px + var(--sb)); width:min(400px, calc(100vw - 32px - 70px)); max-height:calc(100% - var(--tira) - 150px - var(--st)); overflow:auto; padding:14px 16px; font-size:13px; color:var(--tenue); overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+#notas h2 { font-size:11px; letter-spacing:.09em; text-transform:uppercase; margin:0 0 4px; color:var(--texto); font-weight:600; }
+#notas .ceja { margin:0 0 10px; text-transform:none; letter-spacing:0; font-family:var(--mono); font-size:11.5px; }
+#notas ul { margin:0; padding-left:16px; display:grid; gap:6px; }
+#pista { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(var(--tira) + 24px + var(--sb)); padding:8px 14px; font-size:12.5px; color:var(--tenue); border-radius:999px; transition:opacity .4s ease; text-align:center; max-width:calc(100vw - 48px); box-sizing:border-box; }
+#pista.fuera { opacity:0; pointer-events:none; }
+#aviso { position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); padding:10px 16px; font-size:13.5px; max-width:calc(100vw - 48px); text-align:center; }
+#cargando { position:absolute; left:50%; top:50%; width:34px; height:34px; margin:-17px 0 0 -17px; border-radius:50%; border:2px solid var(--borde); border-top-color:var(--acento); animation:gira 0.9s linear infinite; pointer-events:none; }
+@keyframes gira { to { transform:rotate(360deg); } }
+
+/* iPhone vertical y pantallas angostas */
+@media (max-width:640px) {
+  #arriba { max-width:calc(100vw - 32px); }
+  #titulos h1 { font-size:16px; } #titulos p { display:none; }
+  #herr { top:auto; bottom:calc(var(--tira) + 24px + var(--sb)); transform:none; gap:2px; padding:4px; }
+  #puntos { left:12px; right:12px; transform:none; max-width:none; bottom:calc(8px + var(--sb)); }
+  #puntos button img { width:76px; height:38px; } #puntos button span { max-width:76px; font-size:11px; }
+  #plano { width:min(250px, calc(100vw - 32px - 64px)); padding:7px 7px 5px; } #plano .pie { display:none; }
+  #notas { left:12px; right:12px; width:auto; bottom:calc(var(--tira) + 16px + var(--sb)); max-height:55%; }
+  #pista { display:none; }
+}
+/* iPhone horizontal: poca altura, controles en una fila arriba a la derecha */
+@media (max-height:520px) and (orientation:landscape) {
+  #arriba { top:calc(8px + var(--st)); max-width:min(46vw, 420px); }
+  #titulos { padding:6px 11px 7px; } #titulos h1 { font-size:15px; } #titulos p { display:none; }
+  .redondo { width:42px; height:42px; }
+  #herr { top:calc(8px + var(--st)); bottom:auto; transform:none; flex-direction:row; gap:2px; padding:3px; }
+  #herr button { width:40px; height:40px; }
+  #herr button .et { right:auto; left:50%; top:calc(100% + 8px); transform:translateX(-50%); }
+  #puntos { bottom:calc(6px + var(--sb)); padding:5px; gap:6px; }
+  #puntos button img { width:64px; height:32px; } #puntos button span { font-size:10.5px; max-width:64px; }
+  #plano { width:min(220px, 30vw, calc((100vh - var(--tira) - 150px) * 0.9)); padding:6px; bottom:calc(var(--tira) + 14px + var(--sb)); } #plano svg { max-height:none; } #plano .pie { display:none; }
+  #notas { right:var(--sr); bottom:calc(var(--tira) + 14px + var(--sb)); max-height:calc(100% - var(--tira) - 80px - var(--st)); }
+  #pista { display:none; }
+}
+@media (prefers-reduced-motion: reduce) { #lienzo, #marcas, #pista, .ui, .tarjeta { transition:none; } #cargando { animation-duration:3s; } }
+</style>
+
+<main id="entrada" hidden>
+  <form id="fEntrada" autocomplete="on">
+    <div class="sello"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></div>
+    <div><div class="ceja">Recorridos 360</div><h1>Acceso privado</h1></div>
+    <p>Escribe la contraseña para ver los recorridos.</p>
+    <input type="text" name="username" value="Recorridos 360" autocomplete="username" hidden>
+    <label class="campo" for="clave">Contraseña<input id="clave" name="password" type="password" autocomplete="current-password" required></label>
+    <label class="recordar" for="recordar"><input id="recordar" type="checkbox"> Recordar en este equipo</label>
+    <button id="bEntrar" type="submit">Entrar</button>
+    <div id="error" class="error" role="alert"></div>
+  </form>
+</main>
+
+<main id="galeria" hidden>
+  <header class="g-cab">
+    <div class="fila"><div class="ceja">Concursos · panoramas</div>
+      <button id="bSalir" class="salir" type="button" hidden title="Borra la contraseña de este equipo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Cerrar acceso</button></div>
+    <h1>Recorridos <b>360</b></h1>
+    <p>Cada recorrido es un modelo de concurso visto desde varios puntos. Entra y arrastra para mirar alrededor; pellizca para acercar.</p>
+  </header>
+  <div id="lista"></div>
+  <div id="consejo" class="consejo" hidden>
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+    <span>Para verlo a pantalla completa en el iPhone o el iPad: toca <b>Compartir</b> y luego <b>Agregar a inicio</b>. Se abre como una app, sin las barras de Safari.</span>
+  </div>
+</main>
+
+<section id="visor" hidden aria-label="Visor 360">
+  <canvas id="lienzo" aria-label="Panorama 360: arrastra para mirar"></canvas>
+  <div id="marcas"></div>
+  <div id="cargando" hidden></div>
+
+  <div id="arriba" class="ui">
+    <div id="vcab">
+      <button id="bVolver" class="panel redondo" type="button" aria-label="Volver a los recorridos" title="Volver a los recorridos"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <header id="titulos" class="panel"><div class="ceja" id="vCeja"></div><h1 id="vTitulo"></h1><p id="vTexto"></p></header>
+    </div>
+    <div id="momento" class="panel" role="group" aria-label="Estado de la escena" hidden></div>
+  </div>
+
+  <div id="herr" class="panel ui" role="toolbar" aria-label="Controles">
+    <button id="bAuto" type="button" aria-pressed="true" aria-label="Girar solo"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4.5h-4.5"/></svg><span class="et">Girar solo</span></button>
+    <button id="bPlano" type="button" aria-pressed="true" aria-label="Plano"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg><span class="et">Plano</span></button>
+    <button id="bGiro" type="button" aria-pressed="false" aria-label="Giroscopio"><svg class="ic" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17.5h2"/><path d="M3.5 9a9 9 0 0 0 0 6M20.5 9a9 9 0 0 1 0 6"/></svg><span class="et">Mover el equipo para mirar</span></button>
+    <button id="bInicial" type="button" aria-label="Vista inicial"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.6"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5"/></svg><span class="et">Vista inicial</span></button>
+    <button id="bNotas" type="button" aria-pressed="false" aria-label="Notas"><svg class="ic" viewBox="0 0 24 24"><path d="M6 3h8.5L19 7.5V21H6z"/><path d="M14 3v5h5M9 12.5h7M9 16.5h7"/></svg><span class="et">Notas</span></button>
+    <button id="bLimpio" type="button" aria-label="Ocultar controles"><svg class="ic" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20L20 4"/></svg><span class="et">Ocultar controles (toca para volver)</span></button>
+    <button id="bCompleta" type="button" aria-label="Pantalla completa"><svg class="ic" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="et">Pantalla completa</span></button>
+  </div>
+
+  <aside id="plano" class="panel ui" aria-label="Planta"></aside>
+  <section id="notas" class="panel ui" hidden><h2>Notas</h2><p class="ceja" id="nCeja"></p><ul id="nLista"></ul></section>
+  <div id="pista" class="panel ui"></div>
+  <nav id="puntos" class="panel ui" aria-label="Puntos del recorrido"></nav>
+  <div id="aviso" class="panel" hidden></div>
+</section>
+
+<script>
+(function(){
+  'use strict';
+  const $ = s => document.querySelector(s);
+  const BASE = 'recorridos/';
+  const galeria = $('#galeria'), visorEl = $('#visor'), lista = $('#lista');
+  let catalogo = [], vinoDeGaleria = false;
+  const enMarco = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+
+  async function json(u){ const r = await fetch(u, {cache:'no-cache'}); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }
+
+  // ================= DATOS: abiertos (local, Artifact) o cifrados (sitio publico) =================
+  // Cifrado: datos/acceso.json trae la sal; la clave sale de la contrasena con PBKDF2 y descifra cada .bin (AES-256-GCM, IV en los 12 primeros bytes).
+  let cifrado = false, acceso = null, clave = null, mapa = null;
+  const GUARDA = 'r360-clave';
+  const b64aBytes = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+  const bytesAb64 = b => btoa(String.fromCharCode(...new Uint8Array(b)));
+  async function derivaClave(pw){
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2', salt:b64aBytes(acceso.sal), iterations:acceso.iter, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, true, ['decrypt']);
+  }
+  const importaClave = raw => crypto.subtle.importKey('raw', b64aBytes(raw), {name:'AES-GCM'}, true, ['decrypt']);
+  async function bajaCifrado(nombre){
+    const r = await fetch('datos/' + nombre); if (!r.ok) throw new Error('HTTP ' + r.status);
+    const b = await r.arrayBuffer();
+    return crypto.subtle.decrypt({name:'AES-GCM', iv:new Uint8Array(b, 0, 12)}, clave, new Uint8Array(b, 12));
+  }
+  function binDe(logica){ const e = mapa && mapa[logica]; if (!e) throw new Error('falta ' + logica); return e[0]; }
+  function rutaReal(logica){ return cifrado ? 'datos/' + binDe(logica) : logica; }
+  async function leeJSON(logica){ if (!cifrado) return json(logica); return JSON.parse(new TextDecoder().decode(await bajaCifrado(binDe(logica)))); }
+  async function urlImagen(logica){ if (!cifrado) return logica; return URL.createObjectURL(new Blob([await bajaCifrado(binDe(logica))], {type:'image/jpeg'})); }
+  function suelta(u){ if (u && u.startsWith('blob:')) URL.revokeObjectURL(u); }
+  function guardaClave(raw, recordar){
+    try { sessionStorage.setItem(GUARDA, raw); } catch (e) {}
+    try { if (recordar) localStorage.setItem(GUARDA, raw); else localStorage.removeItem(GUARDA); } catch (e) {}
+  }
+  function leeGuardada(){ let v = null; try { v = sessionStorage.getItem(GUARDA); } catch (e) {} if (!v) { try { v = localStorage.getItem(GUARDA); } catch (e) {} } return v; }
+  function olvidaClave(){ try { sessionStorage.removeItem(GUARDA); } catch (e) {} try { localStorage.removeItem(GUARDA); } catch (e) {} }
+  function esc(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c])); }
+  function fechaTxt(f){ if (!f) return ''; try { return new Date(f + 'T12:00:00').toLocaleDateString('es-CO', {day:'numeric', month:'short', year:'numeric'}); } catch (e) { return f; } }
+
+  // ================= GALERIA =================
+  function tarjeta(c, destacada){
+    const est = (c.estados || []).filter(Boolean);
+    return '<li' + (destacada ? ' style="grid-column:1/-1"' : '') + '><a class="tarjeta' + (destacada ? ' destacada' : '') + '" href="#' + encodeURIComponent(c.id) + '" data-id="' + esc(c.id) + '">' +
+      '<div class="foto" data-portada="' + esc(c.portada) + '" role="img" aria-label="Vista de ' + esc(c.titulo) + '"></div>' +
+      '<div class="info"><div class="ceja">' + esc([c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Recorrido') + '</div>' +
+      '<h3>' + esc(c.titulo) + '</h3>' +
+      '<div class="meta"><span class="chip num">' + c.puntos + ' puntos</span>' + est.map(e => '<span class="chip">' + esc(e) + '</span>').join('') +
+      (c.fecha ? '<span class="chip num">' + esc(fechaTxt(c.fecha)) + '</span>' : '') + '</div>' +
+      '<span class="entrar">Entrar al recorrido <svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div></a></li>';
+  }
+  function pintaGaleria(){
+    if (!catalogo.length) { lista.innerHTML = '<div class="vacio">Todavía no hay recorridos. Importa un visor con <code>python importar_visor.py visor.html</code>.</div>'; return; }
+    const grupos = new Map();
+    catalogo.forEach(c => { const k = c.concurso || ''; if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(c); });
+    const conNombre = [...grupos.keys()].some(Boolean);
+    let h = '', primero = true;
+    grupos.forEach((items, k) => {
+      h += '<section class="grupo">' + (conNombre ? '<h2>' + esc(k || 'Otros') + ' <span>' + items.length + '</span></h2>' : '') + '<ul class="tarjetas">';
+      items.forEach(c => { h += tarjeta(c, primero); primero = false; });
+      h += '</ul></section>';
+    });
+    lista.innerHTML = h;
+    lista.querySelectorAll('a.tarjeta').forEach(a => a.addEventListener('click', () => { vinoDeGaleria = true; }));
+    lista.querySelectorAll('.foto[data-portada]').forEach(f => { urlImagen(f.dataset.portada).then(u => { f.style.backgroundImage = 'url("' + u + '")'; }).catch(() => {}); });
+  }
+  const iOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const instalada = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (iOS && !instalada && !enMarco) $('#consejo').hidden = false;
+
+  // ================= RUTAS =================
+  let abierto = null;
+  function ruta(){
+    if (cifrado && !clave) return;
+    const id = decodeURIComponent(location.hash.replace(/^#/, ''));
+    const c = id && catalogo.find(x => x.id === id);
+    if (c) abreVisor(c); else muestraGaleria();
+  }
+  function muestraGaleria(){
+    if (abierto) { V && V.cierra(); abierto = null; }
+    visorEl.hidden = true; galeria.hidden = false; document.body.classList.remove('en-visor');
+    document.title = 'Recorridos 360';
+  }
+  async function abreVisor(c){
+    if (abierto === c.id) return;
+    abierto = c.id; galeria.hidden = true; visorEl.hidden = false; document.body.classList.add('en-visor'); window.scrollTo(0, 0);
+    document.title = c.titulo + ' · 360';
+    if (!V) V = creaVisor();
+    try { const R = await leeJSON(BASE + c.id + '/recorrido.json'); if (abierto === c.id) V.abre(R); }
+    catch (e) { V.avisa('No se pudo abrir este recorrido. Revisa la conexión y vuelve a intentar.'); }
+  }
+  function volver(){ if (vinoDeGaleria && history.length > 1) history.back(); else location.hash = ''; vinoDeGaleria = false; }
+  window.addEventListener('hashchange', ruta);
+  $('#bVolver').addEventListener('click', volver);
+
+  // ================= VISOR =================
+  let V = null;
+  function creaVisor(){
+    const lienzo = $('#lienzo'), marcas = $('#marcas'), aviso = $('#aviso'), cargando = $('#cargando');
+    const D2R = Math.PI / 180, NMAX = 8;
+    const reducido = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const tactil = !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
+    function avisa(t){ aviso.textContent = t || ''; aviso.hidden = !t; }
+
+    // ---- WebGL (se rehace si iOS pierde el contexto al pasar a segundo plano)
+    let gl = null, tex = null, U = {}, maxTex = 4096;
+    const vs = 'attribute vec2 p; varying vec2 q; void main(){ q = p; gl_Position = vec4(p, 0.0, 1.0); }';
+    const fs = [
+      'precision highp float; varying vec2 q; uniform sampler2D t; uniform float yaw, pitch, fov, aspecto, Ac, h, pix, foco, verAn; uniform int nAn;',
+      'uniform vec3 an[' + NMAX + ']; uniform vec3 colAn;',
+      'const float PI = 3.14159265358979;',
+      'void main(){',
+      '  float f = 1.0 / tan(fov * 0.5);',
+      '  vec3 d = normalize(vec3(q.x * aspecto, q.y, f));',
+      '  float cp = cos(pitch), sp = sin(pitch);',
+      '  d = vec3(d.x, d.y * cp - d.z * sp, d.y * sp + d.z * cp);',
+      '  float cy = cos(yaw), sy = sin(yaw);',
+      '  d = vec3(d.x * cy + d.z * sy, d.y, -d.x * sy + d.z * cy);',
+      '  float u = 0.5 + atan(d.x, d.z) / (2.0 * PI);',
+      '  float v = 0.5 - asin(clamp(d.y, -1.0, 1.0)) / PI;',
+      '  vec3 col = texture2D(t, vec2(u, v)).rgb;',
+      '  if (verAn > 0.5 && d.y < -0.03) {',
+      '    float tt = h / (-d.y);',
+      '    vec2 F = vec2(cos(Ac), sin(Ac)); vec2 R = vec2(sin(Ac), -cos(Ac));',
+      '    vec2 w = tt * (d.z * F + d.x * R);',
+      '    float suave = pix * tt / max(-d.y, 0.08);',
+      '    for (int i = 0; i < ' + NMAX + '; i++) {',
+      '      if (i >= nAn) break;',
+      '      float r = an[i].z; float e = 0.045;',
+      '      if (abs(float(i) - foco) < 0.5) { e = 0.07; }',
+      '      float dd = length(w - an[i].xy);',
+      '      float banda = smoothstep(r - e - suave, r - e, dd) * (1.0 - smoothstep(r, r + suave, dd));',
+      '      float halo = smoothstep(r - suave, r, dd) * (1.0 - smoothstep(r + 0.035, r + 0.035 + suave, dd));',
+      '      float disco = (1.0 - smoothstep(r - e - suave, r - e, dd)) * 0.14;',
+      '      col = mix(col, vec3(0.04, 0.05, 0.06), halo * 0.5);',
+      '      col = mix(col, colAn, max(banda * 0.96, disco));',
+      '    }',
+      '  }',
+      '  gl_FragColor = vec4(col, 1.0);',
+      '}'].join('\n');
+    function iniciaGL(){
+      gl = lienzo.getContext('webgl', {antialias:false, alpha:false, preserveDrawingBuffer:false, powerPreference:'high-performance'});
+      if (!gl) return false;
+      const sh = (tipo, src) => { const s = gl.createShader(tipo); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; };
+      const prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(prog); gl.useProgram(prog);
+      const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      ['yaw','pitch','fov','aspecto','Ac','h','pix','foco','nAn','an','colAn','verAn'].forEach(n => { U[n] = gl.getUniformLocation(prog, n); });
+      tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.uniform3f(U.colAn, 0.957, 0.937, 0.902);
+      maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 4096;
+      return true;
+    }
+    if (!iniciaGL()) { avisa('Este navegador no tiene WebGL: no puede mostrar el panorama.'); return {abre(){}, cierra(){}, avisa}; }
+    lienzo.addEventListener('webglcontextlost', e => { e.preventDefault(); listo = false; }, false);
+    lienzo.addEventListener('webglcontextrestored', () => { iniciaGL(); tam(); if (R) carga(cur).then(() => { listo = true; dibuja(); }).catch(() => {}); }, false);
+
+    // ---- estado del recorrido abierto
+    let R = null, C = null, P = [], porId = {}, gen = 0;
+    let cur = 0, listo = false, yaw = 0, pitch = 0, fov = 80 * D2R, foco = -1, verAnillos = true;
+    let giro = false, desfaseGiro = null, ultimoGiro = 0, saltando = false, fichas = [], pendiente = false;
+    let momento = 0, ultimoToque = 0, cambiando = false, auto = !reducido, activo = false;
+    const fovMin = 30 * D2R, fovMax = 110 * D2R, pMax = 89 * D2R;
+    const POT = n => (n & (n - 1)) === 0;
+
+    function ruta1(i, m, tipo){ const e = R.imagenes[m] && R.imagenes[m][i]; return e && e[tipo] ? BASE + R.id + '/' + e[tipo] : null; }
+    function hay(i, m){ return !!ruta1(i, m, 'pano'); }
+    function imagen(i, m){
+      if (m === undefined) m = hay(i, momento) ? momento : 0;
+      return urlImagen(ruta1(i, m, 'pano')).then(u => new Promise((ok, mal) => {
+        const im = new Image(); im.decoding = 'async';
+        im.onload = () => { (im.decode ? im.decode().catch(() => {}) : Promise.resolve()).then(() => { suelta(u); ok(im); }); };
+        im.onerror = e => { suelta(u); mal(e); }; im.src = u;
+      }));
+    }
+    function sube(im){
+      let src = im, w = im.naturalWidth, h = im.naturalHeight;
+      if (w > maxTex) { const c = document.createElement('canvas'); c.width = maxTex; c.height = Math.round(maxTex * h / w); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); src = c; w = c.width; h = c.height; }
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, POT(w) && POT(h) ? gl.REPEAT : gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, src);
+    }
+    async function carga(i, im){ sube(im || await imagen(i)); }
+    function libera(){ if (!gl) return; gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([12, 16, 18])); }
+    // precarga: solo descarga los JPG de los saltos (sin decodificar) para no llenar la memoria del iPhone
+    const bajados = new Set();
+    async function precarga(){
+      const g = gen;
+      for (const s of P[cur].saltos) {
+        if (g !== gen) return;
+        const u = ruta1(porId[s.a], hay(porId[s.a], momento) ? momento : 0, 'pano');
+        if (!u || bajados.has(u)) continue;
+        bajados.add(u);
+        try { await (await fetch(rutaReal(u))).arrayBuffer(); } catch (e) { bajados.delete(u); }
+      }
+    }
+
+    // ---- direccion del panorama <-> pantalla (inversa exacta del shader)
+    function dirPano(acim, elev, Ac){ const lon = (Ac - acim) * D2R, e = elev * D2R; return [Math.sin(lon) * Math.cos(e), Math.sin(e), Math.cos(lon) * Math.cos(e)]; }
+    function proyecta(d){
+      const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+      const x1 = d[0] * cy - d[2] * sy, z1 = d[0] * sy + d[2] * cy, y1 = d[1];
+      const ry = y1 * cp + z1 * sp, rz = -y1 * sp + z1 * cp, rx = x1;
+      if (rz <= 0.05) return null;
+      const f = 1 / Math.tan(fov / 2), W = lienzo.clientWidth, H = lienzo.clientHeight;
+      return [(rx / rz * f / (W / H) + 1) / 2 * W, (1 - ry / rz * f) / 2 * H];
+    }
+    function rayo(px, py){
+      const W = lienzo.clientWidth, H = lienzo.clientHeight, f = 1 / Math.tan(fov / 2);
+      let x = (px / W * 2 - 1) * (W / H), y = 1 - py / H * 2, z = f; const n = Math.hypot(x, y, z); x /= n; y /= n; z /= n;
+      const cp = Math.cos(pitch), sp = Math.sin(pitch); const y2 = y * cp - z * sp, z2 = y * sp + z * cp;
+      const cy = Math.cos(yaw), sy = Math.sin(yaw); return [x * cy + z2 * sy, y2, -x * sy + z2 * cy];
+    }
+    function rumboVista(){ return P[cur].Ac - yaw / D2R; }
+    function fovInicial(){ return (lienzo.clientWidth / Math.max(1, lienzo.clientHeight) < 0.8 ? 92 : 80) * D2R; }
+    function envuelve(a){ return ((a + 180) % 360 + 360) % 360 - 180; }
+    const CARD = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+
+    // ---- rotulos de los saltos del punto actual
+    function armaFichas(){
+      marcas.textContent = ''; fichas = [];
+      P[cur].saltos.forEach(s => {
+        const q = P[porId[s.a]]; if (!q) return;
+        const b = document.createElement('button');
+        b.className = 'ficha' + (s.visible ? '' : ' tras'); b.type = 'button';
+        const n = document.createElement('span'); n.textContent = q.corto;
+        const d = document.createElement('span'); d.className = 'd'; d.textContent = s.dist_txt;
+        b.append(n, d);
+        b.setAttribute('aria-label', 'Ir a ' + q.titulo + ', a ' + s.dist_txt + (s.visible ? '' : ', detrás del muro'));
+        b.title = s.visible ? 'Ir a ' + q.titulo : q.titulo + ': detrás del muro (salta a través)';
+        b.addEventListener('click', ev => { ev.stopPropagation(); salta(porId[s.a], s.acimut); });
+        const entra = () => { foco = s.visible ? s.kAn : -1; pinta(); }, sale = () => { foco = -1; pinta(); };
+        b.addEventListener('mouseenter', entra); b.addEventListener('mouseleave', sale); b.addEventListener('focus', entra); b.addEventListener('blur', sale);
+        marcas.appendChild(b);
+        fichas.push({b, s, dAncla: dirPano(s.acimut, s.elev_ficha, P[cur].Ac), dCentro: dirPano(s.acimut, s.elev, P[cur].Ac), xy: null});
+      });
+    }
+    function colocaFichas(){
+      const W = lienzo.clientWidth, H = lienzo.clientHeight, cajas = [];
+      fichas.map(f => ({f, xy: proyecta(f.dAncla)})).sort((a, b) => a.f.s.dist - b.f.s.dist).forEach(o => {
+        const b = o.f.b;
+        if (!o.xy || o.xy[0] < -80 || o.xy[0] > W + 80 || o.xy[1] < -40 || o.xy[1] > H + 40) { b.style.visibility = 'hidden'; o.f.xy = null; return; }
+        const w = b.offsetWidth, h = b.offsetHeight;
+        let x = o.xy[0] - w / 2, y = o.xy[1] - h - 6;
+        for (let n = 0; n < 6; n++) { const c = cajas.find(c => x < c[2] && x + w > c[0] && y < c[3] && y + h > c[1]); if (!c) break; y = c[1] - h - 4; }
+        cajas.push([x, y, x + w, y + h]);
+        b.style.visibility = 'visible'; b.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px)';
+        o.f.xy = o.xy;
+      });
+    }
+
+    // ---- plano: punto actual y cono de vision
+    const plano = $('#plano');
+    function pintaPlano(){
+      plano.querySelectorAll('.pt').forEach(g => g.classList.toggle('activo', g.dataset.id === P[cur].id));
+      document.querySelectorAll('#puntos button').forEach(b => b.setAttribute('aria-current', String(b.dataset.id === P[cur].id)));
+      const a = rumboVista(), rumboTxt = $('#rumbo'), cono = $('#cono');
+      if (rumboTxt) { const g = ((90 - a + (C.norte_desfase || 0)) % 360 + 360) % 360; rumboTxt.textContent = 'mirando al ' + CARD[Math.round(g / 45) % 8] + ' · ' + Math.round(g) + '°'; }
+      if (!cono || !C.plano || plano.hidden) return;
+      const p = P[cur], W = lienzo.clientWidth, H = lienzo.clientHeight, Rr = C.plano.cono;
+      const hf = Math.min(80, Math.atan(Math.tan(fov / 2) * W / H) / D2R);
+      const sx = x => (x - C.plano.x0).toFixed(3), sy = y => (C.plano.y1 - y).toFixed(3);
+      const a1 = (a - hf) * D2R, a2 = (a + hf) * D2R;
+      cono.setAttribute('d', 'M' + sx(p.x) + ' ' + sy(p.y) + ' L' + sx(p.x + Rr * Math.cos(a1)) + ' ' + sy(p.y + Rr * Math.sin(a1)) +
+        ' A' + Rr + ' ' + Rr + ' 0 0 0 ' + sx(p.x + Rr * Math.cos(a2)) + ' ' + sy(p.y + Rr * Math.sin(a2)) + ' Z');
+    }
+
+    // ---- dibujo
+    function pinta(){ if (pendiente) return; pendiente = true; requestAnimationFrame(dibuja); }
+    function dibuja(){
+      pendiente = false; if (!listo || !activo) return;
+      const p = P[cur];
+      gl.uniform1f(U.yaw, yaw); gl.uniform1f(U.pitch, pitch); gl.uniform1f(U.fov, fov); gl.uniform1f(U.aspecto, lienzo.width / lienzo.height);
+      gl.uniform1f(U.Ac, p.Ac * D2R); gl.uniform1f(U.h, p.h); gl.uniform1f(U.pix, fov / lienzo.height); gl.uniform1f(U.foco, foco); gl.uniform1f(U.verAn, verAnillos ? 1 : 0);
+      const an = new Float32Array(NMAX * 3); let n = 0;
+      p.saltos.forEach(s => { if (s.visible && n < NMAX) { an[n * 3] = s.dx; an[n * 3 + 1] = s.dy; an[n * 3 + 2] = C.radio; n++; } });
+      gl.uniform1i(U.nAn, n); gl.uniform3fv(U.an, an);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      colocaFichas(); pintaPlano();
+    }
+    function tam(){
+      if (!activo) return;
+      const r = Math.min(window.devicePixelRatio || 1, 2);
+      lienzo.width = Math.max(1, Math.round(lienzo.clientWidth * r)); lienzo.height = Math.max(1, Math.round(lienzo.clientHeight * r));
+      gl.viewport(0, 0, lienzo.width, lienzo.height); pinta();
+    }
+    window.addEventListener('resize', tam);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', tam);
+    const tira = $('#puntos');
+    if (window.ResizeObserver) new ResizeObserver(() => { visorEl.style.setProperty('--tira', tira.offsetHeight + 'px'); }).observe(tira);
+
+    // ---- textos y piezas del recorrido
+    function textos(){
+      const p = P[cur];
+      $('#vTitulo').textContent = p.titulo; $('#vTexto').textContent = p.texto || '';
+      rotulaMomento();
+    }
+    function nombreEstado(){ const m = hay(cur, momento) ? momento : 0; return R.estados_nombres[m] || ''; }
+    function armaPuntos(){
+      tira.innerHTML = '';
+      P.forEach((p, i) => {
+        const b = document.createElement('button'); b.type = 'button'; b.dataset.id = p.id; b.title = p.titulo; b.setAttribute('aria-current', 'false');
+        const im = document.createElement('img'); im.alt = ''; im.dataset.i = i; im.decoding = 'async';
+        const sp = document.createElement('span'); sp.textContent = p.corto || p.titulo;
+        b.append(im, sp); b.addEventListener('click', () => salta(i, P[i].Ac));
+        tira.appendChild(b);
+      });
+    }
+    function armaPlano(){
+      const bP = $('#bPlano');
+      if (!R.plano_svg) { plano.innerHTML = ''; plano.hidden = true; bP.hidden = true; return; }
+      bP.hidden = false;
+      plano.innerHTML = R.plano_svg + '<div class="pie"><span>Planta · flecha = norte</span><span id="rumbo"></span></div>';
+      plano.querySelectorAll('.pt').forEach(g => {
+        const ir = () => salta(porId[g.dataset.id]);
+        g.addEventListener('click', ir);
+        g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ir(); } });
+      });
+      const angosto = window.matchMedia('(max-width:640px), (max-height:520px)').matches;
+      plano.hidden = angosto; bP.setAttribute('aria-pressed', String(!plano.hidden));
+    }
+    function armaNotas(){
+      $('#nCeja').textContent = R.ceja || '';
+      $('#nLista').innerHTML = (R.notas || []).map(n => '<li>' + n + '</li>').join('');
+      $('#bNotas').hidden = !(R.notas && R.notas.length) && !R.ceja;
+      $('#notas').hidden = true; $('#bNotas').setAttribute('aria-pressed', 'false');
+    }
+    const momentoEl = $('#momento');
+    function armaMomento(){
+      const nombres = R.estados_nombres || [];
+      momentoEl.innerHTML = nombres.map((t, k) => '<button type="button" data-m="' + k + '">' + esc(t) + '</button>').join('');
+      momentoEl.hidden = nombres.length < 2;
+      momentoEl.querySelectorAll('button').forEach(b => b.addEventListener('click', () => cambiaMomento(+b.dataset.m)));
+    }
+    let minis = {};
+    function mini(logica){ if (!minis[logica]) minis[logica] = urlImagen(logica); return minis[logica]; }
+    function sueltaMinis(){ Object.values(minis).forEach(p => p.then(suelta).catch(() => {})); minis = {}; }
+    function rotulaMomento(){
+      const m = hay(cur, momento) ? momento : 0;
+      momentoEl.querySelectorAll('button').forEach(b => { const k = +b.dataset.m; b.classList.toggle('on', k === m); b.setAttribute('aria-pressed', String(k === m)); b.disabled = !hay(cur, k); });
+      tira.querySelectorAll('img[data-i]').forEach(im => { const i = +im.dataset.i, mm = hay(i, momento) ? momento : 0; const u = ruta1(i, mm, 'mini'); if (u) mini(u).then(s => { if (im.getAttribute('src') !== s) im.src = s; }).catch(() => {}); });
+      $('#vCeja').textContent = [R.titulo, R.estados_nombres.length > 1 ? nombreEstado() : ''].filter(Boolean).join(' · ');
+    }
+
+    // ---- cambiar de punto (el rumbo se conserva: llegas mirando hacia donde ibas)
+    async function salta(i, rumbo){
+      if (saltando || i === cur || !listo || i == null) return; saltando = true; tocado();
+      const a = (typeof rumbo === 'number') ? rumbo : rumboVista(), g = gen;
+      visorEl.classList.add('fundido');
+      const espera = setTimeout(() => { cargando.hidden = false; }, 450);
+      try {
+        const [im] = await Promise.all([imagen(i), new Promise(r => setTimeout(r, reducido ? 0 : 220))]);
+        if (g !== gen) return;
+        cur = i; foco = -1; await carga(i, im);
+        yaw = envuelve(P[i].Ac - a) * D2R; pitch = 0; fov = fovInicial(); desfaseGiro = null;
+        armaFichas(); textos(); dibuja();
+      } catch (err) { avisa('No se pudo cargar ese panorama.'); setTimeout(() => avisa(''), 2600); }
+      finally { clearTimeout(espera); cargando.hidden = true; visorEl.classList.remove('fundido'); saltando = false; }
+      precarga();
+    }
+    async function cambiaMomento(m){
+      if (cambiando || !listo || saltando) return;
+      const N = R.estados_nombres.length;
+      if (m === undefined) { m = momento; for (let k = 1; k <= N; k++) { const c = (momento + k) % N; if (hay(cur, c)) { m = c; break; } } }
+      if (!hay(cur, m) || m === momento) return;
+      cambiando = true; tocado();
+      try { const im = await imagen(cur, m); momento = m; await carga(cur, im); rotulaMomento(); dibuja(); }
+      catch (err) { avisa('No se pudo cargar ese panorama.'); setTimeout(() => avisa(''), 2600); }
+      cambiando = false; precarga();
+    }
+
+    // ---- entrada: arrastre, pellizco, rueda, toque en un anillo, teclado
+    const pista = $('#pista');
+    function tocado(){ ultimoToque = performance.now(); pista.classList.add('fuera'); }
+    let arr = false, px = 0, py = 0, x0 = 0, y0 = 0, movido = 0, dist0 = 0, fov0 = fov;
+    const pts = new Map();
+    lienzo.addEventListener('pointerdown', e => {
+      try { lienzo.setPointerCapture(e.pointerId); } catch (err) {}
+      pts.set(e.pointerId, [e.clientX, e.clientY]); arr = true; px = x0 = e.clientX; py = y0 = e.clientY; movido = 0; lienzo.classList.add('arrastra'); ultimoToque = performance.now();
+      if (pts.size === 2) { const a = [...pts.values()]; dist0 = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); fov0 = fov; }
+    });
+    lienzo.addEventListener('pointermove', e => {
+      if (!pts.has(e.pointerId)) { sobre(e); return; }
+      pts.set(e.pointerId, [e.clientX, e.clientY]);
+      if (pts.size === 2) { const a = [...pts.values()]; const d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); if (dist0 > 0) { fov = Math.min(fovMax, Math.max(fovMin, fov0 * dist0 / d)); pinta(); } movido = 99; tocado(); return; }
+      if (!arr) return;
+      movido = Math.max(movido, Math.hypot(e.clientX - x0, e.clientY - y0));
+      const k = fov / lienzo.clientHeight;
+      yaw -= (e.clientX - px) * k; pitch -= (e.clientY - py) * k; pitch = Math.max(-pMax, Math.min(pMax, pitch));
+      px = e.clientX; py = e.clientY; if (movido > 5) tocado(); pinta();
+    });
+    function suelta(e){
+      const clic = e.type === 'pointerup' && pts.size === 1 && movido < 8;
+      pts.delete(e.pointerId); if (pts.size < 2) dist0 = 0;
+      if (pts.size === 0) { arr = false; lienzo.classList.remove('arrastra'); } else { const a = [...pts.values()][0]; px = a[0]; py = a[1]; }
+      if (clic) {
+        const s = anilloEn(e.clientX, e.clientY);
+        if (s) salta(porId[s.a], s.acimut);
+        else if (tactil || visorEl.classList.contains('limpio')) alternaLimpio();     // un toque suelto muestra u oculta los controles
+      }
+    }
+    lienzo.addEventListener('pointerup', suelta); lienzo.addEventListener('pointercancel', suelta);
+    function anilloEn(cx, cy){
+      if (!listo) return null;
+      const r = lienzo.getBoundingClientRect(), d = rayo(cx - r.left, cy - r.top); if (d[1] >= -0.03) return null;
+      const p = P[cur], tt = p.h / (-d[1]), A = p.Ac * D2R;
+      const wx = tt * (d[2] * Math.cos(A) + d[0] * Math.sin(A)), wy = tt * (d[2] * Math.sin(A) - d[0] * Math.cos(A));
+      let mejor = null, dm = C.radio + (tactil ? 0.35 : 0.2);
+      p.saltos.forEach(s => { if (!s.visible) return; const dd = Math.hypot(wx - s.dx, wy - s.dy); if (dd < dm) { dm = dd; mejor = s; } });
+      return mejor;
+    }
+    function sobre(e){ if (e.pointerType === 'touch') return; const s = anilloEn(e.clientX, e.clientY), k = s ? s.kAn : -1; lienzo.style.cursor = s ? 'pointer' : ''; if (k !== foco) { foco = k; pinta(); } }
+    lienzo.addEventListener('wheel', e => { e.preventDefault(); fov = Math.min(fovMax, Math.max(fovMin, fov * (e.deltaY > 0 ? 1.08 : 0.93))); tocado(); pinta(); }, {passive:false});
+    ['gesturestart', 'gesturechange'].forEach(ev => visorEl.addEventListener(ev, e => e.preventDefault()));   // que Safari no haga zoom a la pagina
+    window.addEventListener('keydown', e => {
+      if (!activo) return;
+      if (e.key === 'Escape') { if (visorEl.classList.contains('limpio')) alternaLimpio(); else volver(); return; }
+      const n = parseInt(e.key, 10);
+      if (n >= 1 && n <= P.length && String(n) === e.key) { salta(n - 1); return; }
+      if (e.key === 'n' || e.key === 'N') { cambiaMomento(); e.preventDefault(); return; }
+      const paso = 5 * D2R;
+      if (e.key === 'ArrowLeft') yaw -= paso; else if (e.key === 'ArrowRight') yaw += paso;
+      else if (e.key === 'ArrowUp') pitch = Math.max(-pMax, pitch - paso); else if (e.key === 'ArrowDown') pitch = Math.min(pMax, pitch + paso);
+      else if (e.key === '+' || e.key === '=') fov = Math.max(fovMin, fov * 0.93); else if (e.key === '-') fov = Math.min(fovMax, fov * 1.08);
+      else return;
+      e.preventDefault(); tocado(); pinta();
+    });
+
+    // ---- botones
+    function alternaLimpio(){ visorEl.classList.toggle('limpio'); tocado(); }
+    $('#bLimpio').addEventListener('click', alternaLimpio);
+    $('#bInicial').addEventListener('click', () => { yaw = 0; pitch = 0; fov = fovInicial(); desfaseGiro = null; tocado(); pinta(); });
+    const bC = $('#bCompleta'), de = document.documentElement;
+    const puedeCompleta = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && !!(de.requestFullscreen || de.webkitRequestFullscreen);
+    bC.hidden = !puedeCompleta;
+    bC.addEventListener('click', () => {
+      try {
+        if (!(document.fullscreenElement || document.webkitFullscreenElement)) { const r = de.requestFullscreen || de.webkitRequestFullscreen; const pr = r.call(de); if (pr && pr.catch) pr.catch(() => {}); }
+        else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      } catch (err) {}
+    });
+    const bNotas = $('#bNotas'), notas = $('#notas');
+    bNotas.addEventListener('click', () => { notas.hidden = !notas.hidden; bNotas.setAttribute('aria-pressed', String(!notas.hidden)); });
+    const bPlano = $('#bPlano');
+    bPlano.addEventListener('click', () => { plano.hidden = !plano.hidden; bPlano.setAttribute('aria-pressed', String(!plano.hidden)); pinta(); });
+
+    // ---- giroscopio: misma convencion del visor (DeviceOrientationControls de three.js)
+    const bG = $('#bGiro');
+    function qMul(a, b){ return [a[3]*b[0] + a[0]*b[3] + a[1]*b[2] - a[2]*b[1], a[3]*b[1] - a[0]*b[2] + a[1]*b[3] + a[2]*b[0], a[3]*b[2] + a[0]*b[1] - a[1]*b[0] + a[2]*b[3], a[3]*b[3] - a[0]*b[0] - a[1]*b[1] - a[2]*b[2]]; }
+    function qDeEulerYXZ(x, y, z){ const c1 = Math.cos(x/2), c2 = Math.cos(y/2), c3 = Math.cos(z/2), s1 = Math.sin(x/2), s2 = Math.sin(y/2), s3 = Math.sin(z/2); return [s1*c2*c3 + c1*s2*s3, c1*s2*c3 - s1*c2*s3, c1*c2*s3 - s1*s2*c3, c1*c2*c3 + s1*s2*s3]; }
+    function qGira(q, v){ const qx = q[0], qy = q[1], qz = q[2], qw = q[3]; const tx = 2*(qy*v[2] - qz*v[1]), ty = 2*(qz*v[0] - qx*v[2]), tz = 2*(qx*v[1] - qy*v[0]); return [v[0] + qw*tx + (qy*tz - qz*ty), v[1] + qw*ty + (qz*tx - qx*tz), v[2] + qw*tz + (qx*ty - qy*tx)]; }
+    const q1 = [-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)];
+    function onOri(e){
+      if (!giro || e.alpha == null || e.beta == null || e.gamma == null) return;
+      ultimoGiro = Date.now();
+      const ang = (screen.orientation && typeof screen.orientation.angle === 'number') ? screen.orientation.angle : (window.orientation || 0);
+      let q = qDeEulerYXZ(e.beta * D2R, e.alpha * D2R, -e.gamma * D2R);
+      q = qMul(q, q1);
+      const hh = -ang * D2R; q = qMul(q, [0, 0, Math.sin(hh/2), Math.cos(hh/2)]);
+      const f = qGira(q, [0, 0, -1]);
+      const yawG = Math.atan2(f[0], -f[2]);
+      if (desfaseGiro === null) desfaseGiro = yaw - yawG;
+      yaw = yawG + desfaseGiro;
+      pitch = Math.max(-pMax, Math.min(pMax, -Math.asin(Math.max(-1, Math.min(1, f[1])))));
+      pinta();
+    }
+    function apagaGiro(){ window.removeEventListener('deviceorientation', onOri, true); giro = false; bG.setAttribute('aria-pressed', 'false'); }
+    bG.addEventListener('click', async () => {
+      if (giro) { apagaGiro(); return; }
+      try { if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') { const r = await DeviceOrientationEvent.requestPermission(); if (r !== 'granted') { avisa('Sin permiso para el giroscopio.'); setTimeout(() => avisa(''), 2600); return; } } }
+      catch (err) { avisa('El giroscopio no está disponible aquí.'); setTimeout(() => avisa(''), 2600); return; }
+      desfaseGiro = null; ultimoGiro = 0; window.addEventListener('deviceorientation', onOri, true); giro = true; bG.setAttribute('aria-pressed', 'true'); tocado();
+      setTimeout(() => { if (giro && !ultimoGiro) { apagaGiro(); avisa('Este navegador no entrega el giroscopio en esta página.'); setTimeout(() => avisa(''), 3800); } }, 1600);
+    });
+    bG.hidden = !('DeviceOrientationEvent' in window) || !tactil;
+
+    // ---- paneo automatico: gira despacio mientras nadie toca; se pausa al tocar
+    const bAuto = $('#bAuto');
+    let tPrev = 0, VEL = 0, PAUSA = 6000;
+    function giraSolo(t){
+      if (!activo) { tPrev = 0; return; }
+      const dt = tPrev ? Math.min(0.1, (t - tPrev) / 1000) : 0; tPrev = t;
+      if (auto && listo && !saltando && !cambiando && !arr && !giro && document.visibilityState === 'visible' && (t - ultimoToque) > PAUSA) { yaw += VEL * dt; pinta(); }
+      requestAnimationFrame(giraSolo);
+    }
+    function rotulaAuto(){ bAuto.setAttribute('aria-pressed', String(auto)); }
+    bAuto.addEventListener('click', () => { auto = !auto; ultimoToque = -1e9; rotulaAuto(); });
+
+    // ---- pantalla encendida mientras se presenta
+    let candado = null;
+    async function pideCandado(){ try { if ('wakeLock' in navigator && document.visibilityState === 'visible') candado = await navigator.wakeLock.request('screen'); } catch (e) { candado = null; } }
+    document.addEventListener('visibilitychange', () => { if (activo && document.visibilityState === 'visible') { pideCandado(); tam(); } });
+
+    // ---- abrir / cerrar un recorrido
+    function abre(Rn){
+      gen++; R = Rn; C = R.datos; P = C.puntos; porId = {}; P.forEach((p, i) => { porId[p.id] = i; });
+      if (!R.estados_nombres || !R.estados_nombres.length) R.estados_nombres = C.estados || [''];
+      cur = (C.inicio in porId) ? porId[C.inicio] : 0; momento = C.momento_inicial || 0;
+      yaw = 0; pitch = 0; fov = fovInicial(); foco = -1; listo = false; saltando = false; cambiando = false; desfaseGiro = null;
+      VEL = 360 / (C.vuelta_s || 120) * D2R; PAUSA = (C.pausa_s || 6) * 1000;
+      ultimoToque = performance.now() - PAUSA + 1500;
+      visorEl.classList.remove('limpio', 'fundido');
+      armaPuntos(); armaPlano(); armaNotas(); armaMomento(); rotulaAuto();
+      $('#vTitulo').textContent = P[cur].titulo; $('#vTexto').textContent = P[cur].texto || ''; rotulaMomento();
+      pista.textContent = tactil ? 'Arrastra para mirar · pellizca para acercar · toca un anillo o una miniatura para saltar · un toque oculta los controles'
+                                 : 'Arrastra para mirar · rueda para acercar · clic en un anillo, un rótulo o una miniatura para saltar · teclas 1–' + P.length + ' y flechas';
+      pista.classList.remove('fuera');
+      marcas.textContent = '';
+      activo = true; tam(); libera(); gl.clearColor(0.047, 0.063, 0.071, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+      avisa(''); cargando.hidden = false;
+      const g = gen;
+      carga(cur).then(() => {
+        if (g !== gen) return;
+        listo = true; cargando.hidden = true; armaFichas(); textos(); dibuja(); precarga();
+      }).catch(() => { cargando.hidden = true; avisa('No se pudo cargar el panorama.'); });
+      requestAnimationFrame(giraSolo); pideCandado();
+      setTimeout(() => pista.classList.add('fuera'), 9000);
+    }
+    function cierra(){
+      sueltaMinis(); gen++; activo = false; listo = false; apagaGiro(); libera(); marcas.textContent = ''; avisa(''); cargando.hidden = true;
+      if (candado) { candado.release().catch(() => {}); candado = null; }
+      if (document.fullscreenElement || document.webkitFullscreenElement) { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {} }
+    }
+
+    // ganchos de prueba (mismos del visor)
+    window.__r360 = {
+      estado: () => ({recorrido: R && R.id, actual: P[cur] && P[cur].id, yaw: yaw / D2R, elevacion: -pitch / D2R, fov: fov / D2R, listo, saltando, ancho: lienzo.clientWidth, alto: lienzo.clientHeight, maxTex}),
+      vista: (y, elev, f) => { yaw = y * D2R; pitch = -elev * D2R; if (f) fov = f * D2R; dibuja(); },
+      salta: (id, rumbo) => salta(porId[id], rumbo), momento: m => cambiaMomento(m), auto: v => { auto = !!v; ultimoToque = -1e9; rotulaAuto(); }
+    };
+    return {abre, cierra, avisa};
+  }
+
+  // ================= ARRANQUE =================
+  const entrada = $('#entrada'), fEntrada = $('#fEntrada'), campo = $('#clave'), bEntrar = $('#bEntrar'), error = $('#error'), bSalir = $('#bSalir');
+  async function abreIndice(){
+    const ind = JSON.parse(new TextDecoder().decode(await bajaCifrado(acceso.indice)));
+    catalogo = ind.catalogo || []; mapa = ind.archivos || {};
+    entrada.hidden = true; bSalir.hidden = false; pintaGaleria(); ruta();
+  }
+  function pideEntrada(msg){
+    clave = null; galeria.hidden = true; visorEl.hidden = true; entrada.hidden = false; error.textContent = msg || '';
+    setTimeout(() => { try { campo.focus(); } catch (e) {} }, 50);
+  }
+  fEntrada.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!campo.value) return;
+    bEntrar.disabled = true; bEntrar.textContent = 'Abriendo…'; error.textContent = '';
+    try {
+      clave = await derivaClave(campo.value);
+      await abreIndice();
+      guardaClave(bytesAb64(await crypto.subtle.exportKey('raw', clave)), $('#recordar').checked);
+      campo.value = '';
+    } catch (err) {
+      clave = null;
+      error.textContent = (err && err.name === 'OperationError') ? 'Contraseña incorrecta.' : 'No se pudo abrir. Revisa la conexión y vuelve a intentar.';
+      campo.select();
+    }
+    bEntrar.disabled = false; bEntrar.textContent = 'Entrar';
+  });
+  bSalir.addEventListener('click', () => { olvidaClave(); location.hash = ''; location.reload(); });
+
+  async function arranca(){
+    try { const r = await fetch('datos/acceso.json', {cache:'no-cache'}); if (r.ok) acceso = await r.json(); } catch (e) {}
+    if (acceso && acceso.sal) {
+      cifrado = true;
+      if (!(window.crypto && crypto.subtle)) { pideEntrada('Este navegador no puede descifrar los recorridos. Ábrelo con https en Safari o Chrome.'); bEntrar.disabled = true; return; }
+      const g = leeGuardada();
+      if (g) { try { clave = await importaClave(g); await abreIndice(); return; } catch (e) { clave = null; olvidaClave(); } }
+      pideEntrada(); return;
+    }
+    galeria.hidden = false;
+    return json(BASE + 'catalogo.json').then(c => { catalogo = Array.isArray(c) ? c : []; pintaGaleria(); ruta(); });
+  }
+  arranca()
+    .catch(() => { galeria.hidden = false;
+      lista.innerHTML = '<div class="vacio">No se pudo leer el catálogo de recorridos.' +
+        (location.protocol === 'file:' ? ' Esta app necesita abrirse desde un servidor: en la carpeta <code>web</code> corre <code>python -m http.server</code> y abre <code>http://localhost:8000</code>.' : ' Revisa la conexión y recarga la página.') + '</div>';
+    });
+})();
+</script>
+</body>
+</html>

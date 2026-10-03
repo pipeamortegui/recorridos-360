@@ -1,0 +1,5 @@
+# los recorridos SIN cifrar nunca se suben: solo se publica sitio/ (cifrado)
+web/recorridos/
+publicar/
+.claude/
+__pycache__/
