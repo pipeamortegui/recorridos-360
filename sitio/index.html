@@ -399,10 +399,13 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 
     // ---- estado del recorrido abierto
     let R = null, C = null, P = [], porId = {}, gen = 0;
-    let cur = 0, listo = false, yaw = 0, pitch = 0, fov = 80 * D2R, foco = -1, verAnillos = true;
+    let cur = 0, listo = false, yaw = 0, pitch = 0, fov = 80 * D2R, zoomL = 90 * D2R, foco = -1, verAnillos = true;
     let giro = false, desfaseGiro = null, ultimoGiro = 0, saltando = false, fichas = [], pendiente = false;
     let momento = 0, ultimoToque = 0, cambiando = false, auto = !reducido, activo = false;
-    const fovMin = 30 * D2R, fovMax = 110 * D2R, pMax = 89 * D2R;
+    const zMin = 30 * D2R, zMax = 115 * D2R, pMax = 89 * D2R;
+    // el zoom se mide sobre el lado largo: asi un iPhone horizontal no abre 120 grados de ancho (centro aplastado, bordes estirados)
+    function ajustaFov(){ const W = lienzo.clientWidth || 1, H = lienzo.clientHeight || 1; fov = W >= H ? 2 * Math.atan(Math.tan(zoomL / 2) * H / W) : zoomL; }
+    const acota = z => Math.min(zMax, Math.max(zMin, z));
     const POT = n => (n & (n - 1)) === 0;
 
     function ruta1(i, m, tipo){ const e = R.imagenes[m] && R.imagenes[m][i]; return e && e[tipo] ? BASE + R.id + '/' + e[tipo] : null; }
@@ -454,7 +457,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       const cy = Math.cos(yaw), sy = Math.sin(yaw); return [x * cy + z2 * sy, y2, -x * sy + z2 * cy];
     }
     function rumboVista(){ return P[cur].Ac - yaw / D2R; }
-    function fovInicial(){ return (lienzo.clientWidth / Math.max(1, lienzo.clientHeight) < 0.8 ? 92 : 80) * D2R; }
+    function zoomInicial(){ return (lienzo.clientWidth >= lienzo.clientHeight ? 90 : 80) * D2R; }
     function envuelve(a){ return ((a + 180) % 360 + 360) % 360 - 180; }
     const CARD = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
 
@@ -511,6 +514,9 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     function pinta(){ if (pendiente) return; pendiente = true; requestAnimationFrame(dibuja); }
     function dibuja(){
       pendiente = false; if (!listo || !activo) return;
+      const r = Math.min(window.devicePixelRatio || 1, 2), w = Math.max(1, Math.round(lienzo.clientWidth * r)), hh = Math.max(1, Math.round(lienzo.clientHeight * r));
+      if (lienzo.width !== w || lienzo.height !== hh) { lienzo.width = w; lienzo.height = hh; gl.viewport(0, 0, w, hh); }
+      ajustaFov();
       const p = P[cur];
       gl.uniform1f(U.yaw, yaw); gl.uniform1f(U.pitch, pitch); gl.uniform1f(U.fov, fov); gl.uniform1f(U.aspecto, lienzo.width / lienzo.height);
       gl.uniform1f(U.Ac, p.Ac * D2R); gl.uniform1f(U.h, p.h); gl.uniform1f(U.pix, fov / lienzo.height); gl.uniform1f(U.foco, foco); gl.uniform1f(U.verAn, verAnillos ? 1 : 0);
@@ -527,6 +533,8 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       gl.viewport(0, 0, lienzo.width, lienzo.height); pinta();
     }
     window.addEventListener('resize', tam);
+    window.addEventListener('orientationchange', () => { setTimeout(tam, 120); setTimeout(tam, 450); });
+    if (window.ResizeObserver) new ResizeObserver(() => tam()).observe(lienzo);
     if (window.visualViewport) window.visualViewport.addEventListener('resize', tam);
     const tira = $('#puntos');
     if (window.ResizeObserver) new ResizeObserver(() => { visorEl.style.setProperty('--tira', tira.offsetHeight + 'px'); }).observe(tira);
@@ -594,7 +602,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
         const [im] = await Promise.all([imagen(i), new Promise(r => setTimeout(r, reducido ? 0 : 220))]);
         if (g !== gen) return;
         cur = i; foco = -1; await carga(i, im);
-        yaw = envuelve(P[i].Ac - a) * D2R; pitch = 0; fov = fovInicial(); desfaseGiro = null;
+        yaw = envuelve(P[i].Ac - a) * D2R; pitch = 0; zoomL = zoomInicial(); ajustaFov(); desfaseGiro = null;
         armaFichas(); textos(); dibuja();
       } catch (err) { avisa('No se pudo cargar ese panorama.'); setTimeout(() => avisa(''), 2600); }
       finally { clearTimeout(espera); cargando.hidden = true; visorEl.classList.remove('fundido'); saltando = false; }
@@ -614,17 +622,17 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     // ---- entrada: arrastre, pellizco, rueda, toque en un anillo, teclado
     const pista = $('#pista');
     function tocado(){ ultimoToque = performance.now(); pista.classList.add('fuera'); }
-    let arr = false, px = 0, py = 0, x0 = 0, y0 = 0, movido = 0, dist0 = 0, fov0 = fov;
+    let arr = false, px = 0, py = 0, x0 = 0, y0 = 0, movido = 0, dist0 = 0, fov0 = zoomL;
     const pts = new Map();
     lienzo.addEventListener('pointerdown', e => {
       try { lienzo.setPointerCapture(e.pointerId); } catch (err) {}
       pts.set(e.pointerId, [e.clientX, e.clientY]); arr = true; px = x0 = e.clientX; py = y0 = e.clientY; movido = 0; lienzo.classList.add('arrastra'); ultimoToque = performance.now();
-      if (pts.size === 2) { const a = [...pts.values()]; dist0 = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); fov0 = fov; }
+      if (pts.size === 2) { const a = [...pts.values()]; dist0 = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); fov0 = zoomL; }
     });
     lienzo.addEventListener('pointermove', e => {
       if (!pts.has(e.pointerId)) { sobre(e); return; }
       pts.set(e.pointerId, [e.clientX, e.clientY]);
-      if (pts.size === 2) { const a = [...pts.values()]; const d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); if (dist0 > 0) { fov = Math.min(fovMax, Math.max(fovMin, fov0 * dist0 / d)); pinta(); } movido = 99; tocado(); return; }
+      if (pts.size === 2) { const a = [...pts.values()]; const d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); if (dist0 > 0) { zoomL = acota(fov0 * dist0 / d); ajustaFov(); pinta(); } movido = 99; tocado(); return; }
       if (!arr) return;
       movido = Math.max(movido, Math.hypot(e.clientX - x0, e.clientY - y0));
       const k = fov / lienzo.clientHeight;
@@ -652,7 +660,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       return mejor;
     }
     function sobre(e){ if (e.pointerType === 'touch') return; const s = anilloEn(e.clientX, e.clientY), k = s ? s.kAn : -1; lienzo.style.cursor = s ? 'pointer' : ''; if (k !== foco) { foco = k; pinta(); } }
-    lienzo.addEventListener('wheel', e => { e.preventDefault(); fov = Math.min(fovMax, Math.max(fovMin, fov * (e.deltaY > 0 ? 1.08 : 0.93))); tocado(); pinta(); }, {passive:false});
+    lienzo.addEventListener('wheel', e => { e.preventDefault(); zoomL = acota(zoomL * (e.deltaY > 0 ? 1.08 : 0.93)); ajustaFov(); tocado(); pinta(); }, {passive:false});
     ['gesturestart', 'gesturechange'].forEach(ev => visorEl.addEventListener(ev, e => e.preventDefault()));   // que Safari no haga zoom a la pagina
     window.addEventListener('keydown', e => {
       if (!activo) return;
@@ -663,7 +671,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       const paso = 5 * D2R;
       if (e.key === 'ArrowLeft') yaw -= paso; else if (e.key === 'ArrowRight') yaw += paso;
       else if (e.key === 'ArrowUp') pitch = Math.max(-pMax, pitch - paso); else if (e.key === 'ArrowDown') pitch = Math.min(pMax, pitch + paso);
-      else if (e.key === '+' || e.key === '=') fov = Math.max(fovMin, fov * 0.93); else if (e.key === '-') fov = Math.min(fovMax, fov * 1.08);
+      else if (e.key === '+' || e.key === '=') { zoomL = acota(zoomL * 0.93); ajustaFov(); } else if (e.key === '-') { zoomL = acota(zoomL * 1.08); ajustaFov(); }
       else return;
       e.preventDefault(); tocado(); pinta();
     });
@@ -671,7 +679,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     // ---- botones
     function alternaLimpio(){ visorEl.classList.toggle('limpio'); tocado(); }
     $('#bLimpio').addEventListener('click', alternaLimpio);
-    $('#bInicial').addEventListener('click', () => { yaw = 0; pitch = 0; fov = fovInicial(); desfaseGiro = null; tocado(); pinta(); });
+    $('#bInicial').addEventListener('click', () => { yaw = 0; pitch = 0; zoomL = zoomInicial(); ajustaFov(); desfaseGiro = null; tocado(); pinta(); });
     const bC = $('#bCompleta'), de = document.documentElement;
     const puedeCompleta = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && !!(de.requestFullscreen || de.webkitRequestFullscreen);
     bC.hidden = !puedeCompleta;
@@ -738,7 +746,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       gen++; R = Rn; C = R.datos; P = C.puntos; porId = {}; P.forEach((p, i) => { porId[p.id] = i; });
       if (!R.estados_nombres || !R.estados_nombres.length) R.estados_nombres = C.estados || [''];
       cur = (C.inicio in porId) ? porId[C.inicio] : 0; momento = C.momento_inicial || 0;
-      yaw = 0; pitch = 0; fov = fovInicial(); foco = -1; listo = false; saltando = false; cambiando = false; desfaseGiro = null;
+      yaw = 0; pitch = 0; zoomL = zoomInicial(); ajustaFov(); foco = -1; listo = false; saltando = false; cambiando = false; desfaseGiro = null;
       VEL = 360 / (C.vuelta_s || 120) * D2R; PAUSA = (C.pausa_s || 6) * 1000;
       ultimoToque = performance.now() - PAUSA + 1500;
       visorEl.classList.remove('limpio', 'fundido');
@@ -767,7 +775,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     // ganchos de prueba (mismos del visor)
     window.__r360 = {
       estado: () => ({recorrido: R && R.id, actual: P[cur] && P[cur].id, yaw: yaw / D2R, elevacion: -pitch / D2R, fov: fov / D2R, listo, saltando, ancho: lienzo.clientWidth, alto: lienzo.clientHeight, maxTex}),
-      vista: (y, elev, f) => { yaw = y * D2R; pitch = -elev * D2R; if (f) fov = f * D2R; dibuja(); },
+      vista: (y, elev, f) => { yaw = y * D2R; pitch = -elev * D2R; if (f) zoomL = f * D2R; ajustaFov(); dibuja(); },
       salta: (id, rumbo) => salta(porId[id], rumbo), momento: m => cambiaMomento(m), auto: v => { auto = !!v; ultimoToque = -1e9; rotulaAuto(); }
     };
     return {abre, cierra, avisa};
