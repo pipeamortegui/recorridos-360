@@ -44,22 +44,29 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 .grupo h2 { margin:0; font-size:13px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--tenue); display:flex; align-items:baseline; gap:10px; }
 .grupo h2 span { font-family:var(--mono); font-weight:400; letter-spacing:0; }
 .tarjetas { list-style:none; margin:0; padding:0; display:grid; gap:16px; grid-template-columns:repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
-.tarjeta { display:grid; grid-template-rows:auto 1fr; color:inherit; text-decoration:none; background:var(--fondo-2); border:1px solid var(--borde); border-radius:14px; overflow:hidden; transition:border-color .2s ease, transform .2s ease; }
+.tarjeta { position:relative; display:grid; grid-template-rows:auto 1fr; color:inherit; text-decoration:none; background:var(--fondo-2); border:1px solid var(--borde); border-radius:14px; overflow:hidden; transition:border-color .2s ease, transform .2s ease; }
 .tarjeta:hover { border-color:var(--borde-fuerte); }
 .tarjeta:active { transform:scale(.99); }
 .tarjeta .foto { position:relative; aspect-ratio:12/7; max-width:100%; background:#000 center/cover no-repeat; }
 .tarjeta .foto::after { content:"360°"; position:absolute; right:10px; top:10px; font:500 11.5px/1 var(--mono); padding:5px 8px; border-radius:999px; background:rgba(12,16,18,.7); border:1px solid var(--borde); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
 .tarjeta .info { display:grid; gap:6px; padding:14px 16px 16px; align-content:start; min-width:0; }
 .tarjeta h3 { margin:0; font-size:18px; line-height:1.25; font-weight:600; text-wrap:balance; }
+.tarjeta h3 a { color:inherit; text-decoration:none; }
+.tarjeta h3 a::after { content:""; position:absolute; inset:0; }      /* toda la tarjeta abre el recorrido con rotulos */
+.tarjeta .acciones { position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.tarjeta .acciones a { display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:0 15px; border-radius:999px; font-weight:600; font-size:13.5px; text-decoration:none; }
+.tarjeta .acciones .con { background:var(--acento); color:var(--acento-tinta); }
+.tarjeta .acciones .sin { color:var(--texto); border:1px solid var(--borde-fuerte); }
+.tarjeta .acciones .sin:hover { border-color:var(--acento); }
+.tarjeta .acciones a:focus-visible { outline:2px solid var(--acento); outline-offset:2px; }
 .tarjeta .meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
 .chip { font-size:12px; line-height:1; padding:6px 9px; border-radius:999px; border:1px solid var(--borde); color:var(--tenue); white-space:nowrap; }
 .chip.num { font-family:var(--mono); font-variant-numeric:tabular-nums; }
-.tarjeta .entrar { display:none; }
 @media (min-width:860px) {
   .tarjeta.destacada { grid-column:1 / -1; grid-template-columns:minmax(0, 1.65fr) minmax(0, 1fr); grid-template-rows:none; }
   .tarjeta.destacada .info { padding:26px 26px 24px; align-content:center; gap:10px; }
   .tarjeta.destacada h3 { font-size:28px; line-height:1.15; }
-  .tarjeta.destacada .entrar { display:inline-flex; justify-self:start; align-items:center; gap:8px; margin-top:12px; padding:11px 18px; border-radius:999px; background:var(--acento); color:var(--acento-tinta); font-weight:600; font-size:14px; }
+  .tarjeta.destacada .acciones a { min-height:44px; padding:0 18px; font-size:14px; }
 }
 .consejo { display:flex; gap:12px; align-items:flex-start; padding:14px 16px; color:var(--tenue); font-size:13.5px; border-radius:12px; border:1px dashed var(--borde-fuerte); }
 .consejo svg { color:var(--acento); margin-top:1px; }
@@ -96,6 +103,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 .ui { transition:opacity .25s ease, transform .25s ease; }
 #visor.limpio .ui { opacity:0; pointer-events:none !important; }
 #visor.limpio #marcas { opacity:0; }
+#visor.sin-rotulos .ficha { display:none; }      /* version sin rotulos de los espacios: quedan los anillos y los circulos amarillos */
 
 #arriba { position:absolute; left:var(--sl); top:calc(12px + var(--st)); display:grid; gap:8px; justify-items:start; max-width:min(520px, calc(100vw - 32px - 64px)); }
 #vcab { display:flex; align-items:stretch; gap:8px; max-width:100%; }
@@ -244,6 +252,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     <button id="bPlano" type="button" aria-pressed="true" aria-label="Plano"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg><span class="et">Plano</span></button>
     <button id="bGiro" type="button" aria-pressed="false" aria-label="Giroscopio"><svg class="ic" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17.5h2"/><path d="M3.5 9a9 9 0 0 0 0 6M20.5 9a9 9 0 0 1 0 6"/></svg><span class="et">Mover el equipo para mirar</span></button>
     <button id="bInicial" type="button" aria-label="Vista inicial"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.6"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5"/></svg><span class="et">Vista inicial</span></button>
+    <button id="bRotulos" type="button" aria-pressed="true" aria-label="Rótulos de los espacios"><svg class="ic" viewBox="0 0 24 24"><path d="M3.5 12.5V4.5h8l9 9-8 8z"/><circle cx="8" cy="9" r="1.4"/></svg><span class="et">Rótulos</span></button>
     <button id="bNotas" type="button" aria-pressed="false" aria-label="Notas"><svg class="ic" viewBox="0 0 24 24"><path d="M6 3h8.5L19 7.5V21H6z"/><path d="M14 3v5h5M9 12.5h7M9 16.5h7"/></svg><span class="et">Notas</span></button>
     <button id="bLimpio" type="button" aria-label="Ocultar controles"><svg class="ic" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20L20 4"/></svg><span class="et">Ocultar controles (toca para volver)</span></button>
     <button id="bCompleta" type="button" aria-label="Pantalla completa"><svg class="ic" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="et">Pantalla completa</span></button>
@@ -300,13 +309,15 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   // ================= GALERIA =================
   function tarjeta(c, destacada){
     const est = (c.estados || []).filter(Boolean);
-    return '<li' + (destacada ? ' style="grid-column:1/-1"' : '') + '><a class="tarjeta' + (destacada ? ' destacada' : '') + '" href="#' + encodeURIComponent(c.id) + '" data-id="' + esc(c.id) + '">' +
+    const h = '#' + encodeURIComponent(c.id);
+    return '<li' + (destacada ? ' style="grid-column:1/-1"' : '') + '><article class="tarjeta' + (destacada ? ' destacada' : '') + '" data-id="' + esc(c.id) + '">' +
       '<div class="foto" data-portada="' + esc(c.portada) + '" role="img" aria-label="Vista de ' + esc(c.titulo) + '"></div>' +
       '<div class="info"><div class="ceja">' + esc([c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Recorrido') + '</div>' +
-      '<h3>' + esc(c.titulo) + '</h3>' +
+      '<h3><a href="' + h + '">' + esc(c.titulo) + '</a></h3>' +
       '<div class="meta"><span class="chip num">' + c.puntos + ' puntos</span>' + (est.length > 2 ? '<span class="chip">' + est.length + ' estados</span>' : est.map(e => '<span class="chip">' + esc(e) + '</span>').join('')) +
       (c.fecha ? '<span class="chip num">' + esc(fechaTxt(c.fecha)) + '</span>' : '') + '</div>' +
-      '<span class="entrar">Entrar al recorrido <svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div></a></li>';
+      '<div class="acciones"><a class="con" href="' + h + '">Con rótulos <svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>' +
+      '<a class="sin" href="' + h + SIN_ROTULOS + '">Sin rótulos</a></div></div></article></li>';
   }
   function pintaGaleria(){
     if (!catalogo.length) { lista.innerHTML = '<div class="vacio">Todavía no hay recorridos. Importa un visor con <code>python importar_visor.py visor.html</code>.</div>'; return; }
@@ -320,7 +331,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       h += '</ul></section>';
     });
     lista.innerHTML = h;
-    lista.querySelectorAll('a.tarjeta').forEach(a => a.addEventListener('click', () => { vinoDeGaleria = true; }));
+    lista.querySelectorAll('.tarjeta a').forEach(a => a.addEventListener('click', () => { vinoDeGaleria = true; }));
     lista.querySelectorAll('.foto[data-portada]').forEach(f => { urlImagen(f.dataset.portada).then(u => { f.style.backgroundImage = 'url("' + u + '")'; }).catch(() => {}); });
   }
   const iOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -331,10 +342,13 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   let abierto = null;
   function ruta(){
     if (cifrado && !clave) return;
-    const id = decodeURIComponent(location.hash.replace(/^#/, ''));
+    const [id, op] = decodeURIComponent(location.hash.replace(/^#/, '')).split('?');
     const c = id && catalogo.find(x => x.id === id);
-    if (c) abreVisor(c); else muestraGaleria();
+    if (c) { ponRotulos(op !== SIN_ROTULOS.slice(1)); abreVisor(c); } else muestraGaleria();
   }
+  // #id abre con los rotulos de los espacios; #id?sin-rotulos, sin ellos (el boton Rotulos del visor alterna)
+  const SIN_ROTULOS = '?sin-rotulos';
+  function ponRotulos(si){ visorEl.classList.toggle('sin-rotulos', !si); $('#bRotulos').setAttribute('aria-pressed', String(si)); }
   function muestraGaleria(){
     if (abierto) { V && V.cierra(); abierto = null; }
     visorEl.hidden = true; galeria.hidden = false; document.body.classList.remove('en-visor');
@@ -751,6 +765,11 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     // ---- botones
     function alternaLimpio(){ visorEl.classList.toggle('limpio'); tocado(); }
     $('#bLimpio').addEventListener('click', alternaLimpio);
+    $('#bRotulos').addEventListener('click', () => {
+      const si = visorEl.classList.contains('sin-rotulos');
+      ponRotulos(si); tocado(); pinta();
+      try { history.replaceState(history.state, '', '#' + encodeURIComponent(R.id) + (si ? '' : SIN_ROTULOS)); } catch (e) {}
+    });
     $('#bInicial').addEventListener('click', () => { yaw = 0; pitch = 0; zoomL = zoomInicial(); ajustaFov(); desfaseGiro = null; tocado(); pinta(); });
     const bC = $('#bCompleta'), de = document.documentElement;
     const puedeCompleta = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && !!(de.requestFullscreen || de.webkitRequestFullscreen);
