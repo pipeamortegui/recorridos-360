@@ -151,6 +151,26 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 #cargando { position:absolute; left:50%; top:50%; width:34px; height:34px; margin:-17px 0 0 -17px; border-radius:50%; border:2px solid var(--borde); border-top-color:var(--acento); animation:gira 0.9s linear infinite; pointer-events:none; }
 @keyframes gira { to { transform:rotate(360deg); } }
 
+/* v2: botones del mueble del Centro (circulos amarillos sobre el panorama) */
+#estadoMueble { font-size:11.5px; color:var(--acento); letter-spacing:.02em; margin-top:3px; }
+#estadoMueble::before { content:""; display:inline-block; width:8px; height:8px; border-radius:50%; background:#f2c230; margin-right:7px; vertical-align:0; }
+.boton-mueble { position:absolute; left:0; top:0; pointer-events:auto; display:flex; align-items:center; gap:8px; padding:0; margin:0; border:0; background:transparent;
+  cursor:pointer; color:var(--texto); font:inherit; will-change:transform; touch-action:manipulation; }
+.boton-mueble::after { content:""; position:absolute; left:-11px; top:-11px; width:44px; height:44px; }   /* area de toque de 44 px en el iPhone */
+.boton-mueble.izq::after { left:auto; right:-11px; }
+.boton-mueble .disco { position:relative; flex:0 0 auto; width:24px; height:24px; box-sizing:border-box; border-radius:50%; background:#f2c230; border:2px solid rgba(12,16,18,.62);
+  display:grid; place-items:center; color:#1a1408; font:700 16px/1 var(--sans); box-shadow:0 2px 9px rgba(0,0,0,.5); animation:latido 2.6s ease-out infinite; }
+.boton-mueble .rotulo { font-size:12px; font-weight:500; padding:3px 9px 4px; border-radius:999px; background:var(--panel); border:1px solid var(--borde);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); white-space:nowrap; opacity:0; transform:translateX(-4px); transition:opacity .15s ease, transform .15s ease; pointer-events:none; }
+.boton-mueble:hover .rotulo, .boton-mueble:focus-visible .rotulo { opacity:1; transform:none; }
+.boton-mueble.izq { flex-direction:row-reverse; }
+.boton-mueble:hover .disco, .boton-mueble:focus-visible .disco { background:#ffd54a; }
+.boton-mueble:focus-visible { outline:none; }
+.boton-mueble:focus-visible .disco { outline:2px solid var(--acento); outline-offset:3px; }
+@keyframes latido { 0% { box-shadow:0 2px 9px rgba(0,0,0,.5), 0 0 0 0 rgba(242,194,48,.55); } 70% { box-shadow:0 2px 9px rgba(0,0,0,.5), 0 0 0 11px rgba(242,194,48,0); }
+  100% { box-shadow:0 2px 9px rgba(0,0,0,.5), 0 0 0 0 rgba(242,194,48,0); } }
+@media (hover:none) { .boton-mueble .rotulo { opacity:.94; transform:none; font-size:11px; padding:2px 8px 3px; } }
+
 /* iPhone vertical y pantallas angostas */
 @media (max-width:640px) {
   #arriba { max-width:calc(100vw - 32px); }
@@ -176,7 +196,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   #notas { right:var(--sr); bottom:calc(var(--tira) + 14px + var(--sb)); max-height:calc(100% - var(--tira) - 80px - var(--st)); }
   #pista { display:none; }
 }
-@media (prefers-reduced-motion: reduce) { #lienzo, #marcas, #pista, .ui, .tarjeta { transition:none; } #cargando { animation-duration:3s; } }
+@media (prefers-reduced-motion: reduce) { #lienzo, #marcas, #pista, .ui, .tarjeta { transition:none; } #cargando { animation-duration:3s; } .boton-mueble .disco { animation:none; } }
 </style>
 
 <main id="entrada" hidden>
@@ -214,7 +234,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   <div id="arriba" class="ui">
     <div id="vcab">
       <button id="bVolver" class="panel redondo" type="button" aria-label="Volver a los recorridos" title="Volver a los recorridos"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <header id="titulos" class="panel"><div class="ceja" id="vCeja"></div><h1 id="vTitulo"></h1><p id="vTexto"></p></header>
+      <header id="titulos" class="panel"><div class="ceja" id="vCeja"></div><h1 id="vTitulo"></h1><p id="vTexto"></p><div id="estadoMueble" hidden></div></header>
     </div>
     <div id="momento" class="panel" role="group" aria-label="Estado de la escena" hidden></div>
   </div>
@@ -284,7 +304,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       '<div class="foto" data-portada="' + esc(c.portada) + '" role="img" aria-label="Vista de ' + esc(c.titulo) + '"></div>' +
       '<div class="info"><div class="ceja">' + esc([c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Recorrido') + '</div>' +
       '<h3>' + esc(c.titulo) + '</h3>' +
-      '<div class="meta"><span class="chip num">' + c.puntos + ' puntos</span>' + est.map(e => '<span class="chip">' + esc(e) + '</span>').join('') +
+      '<div class="meta"><span class="chip num">' + c.puntos + ' puntos</span>' + (est.length > 2 ? '<span class="chip">' + est.length + ' estados</span>' : est.map(e => '<span class="chip">' + esc(e) + '</span>').join('')) +
       (c.fecha ? '<span class="chip num">' + esc(fechaTxt(c.fecha)) + '</span>' : '') + '</div>' +
       '<span class="entrar">Entrar al recorrido <svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div></a></li>';
   }
@@ -463,7 +483,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 
     // ---- rotulos de los saltos del punto actual
     function armaFichas(){
-      marcas.textContent = ''; fichas = [];
+      marcas.textContent = ''; fichas = []; armaMueble();
       P[cur].saltos.forEach(s => {
         const q = P[porId[s.a]]; if (!q) return;
         const b = document.createElement('button');
@@ -524,7 +544,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       p.saltos.forEach(s => { if (s.visible && n < NMAX) { an[n * 3] = s.dx; an[n * 3 + 1] = s.dy; an[n * 3 + 2] = C.radio; n++; } });
       gl.uniform1i(U.nAn, n); gl.uniform3fv(U.an, an);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      colocaFichas(); pintaPlano();
+      colocaFichas(); colocaMueble(); pintaPlano();
     }
     function tam(){
       if (!activo) return;
@@ -575,11 +595,59 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       $('#bNotas').hidden = !(R.notas && R.notas.length) && !R.ceja;
       $('#notas').hidden = true; $('#bNotas').setAttribute('aria-pressed', 'false');
     }
+    // ---- v2: botones del mueble del punto C.mueble.punto (circulos amarillos); misma proyeccion que los rotulos de salto
+    let CM = null, botonesM = [], anteriorM = 0;
+    function estadoAqui(){ return hay(cur, momento) ? momento : 0; }
+    function armaMueble(){
+      botonesM = [];
+      if (!CM || P[cur].id !== CM.punto) return;
+      CM.botones.forEach(bt => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'boton-mueble'; b.dataset.boton = bt.id;
+        const d = document.createElement('span'); d.className = 'disco'; d.setAttribute('aria-hidden', 'true');
+        const r = document.createElement('span'); r.className = 'rotulo';
+        b.append(d, r);
+        const o = {id: bt.id, bt, el: b, sig: d, rot: r, xy: null, dest: null};
+        b.addEventListener('click', ev => { ev.stopPropagation(); pulsaMueble(o); });
+        b.addEventListener('pointerdown', ev => ev.stopPropagation());
+        marcas.appendChild(b); botonesM.push(o);
+      });
+    }
+    function colocaMueble(){
+      if (!botonesM.length) return;
+      const W = lienzo.clientWidth, H = lienzo.clientHeight, m = estadoAqui();
+      botonesM.forEach(o => {
+        const e = o.bt.en[m];
+        if (!e) { o.el.style.visibility = 'hidden'; o.xy = null; return; }
+        if (o.sig.textContent !== e.signo) o.sig.textContent = e.signo;
+        if (o.rot.textContent !== e.rotulo) { o.rot.textContent = e.rotulo; o.el.title = e.rotulo; o.el.setAttribute('aria-label', e.rotulo); }
+        o.dest = (e.a < 0) ? anteriorM : e.a;
+        const xy = proyecta(dirPano(e.acimut, e.elev, P[cur].Ac));
+        if (!xy || xy[0] < -30 || xy[0] > W + 30 || xy[1] < -30 || xy[1] > H + 30) { o.el.style.visibility = 'hidden'; o.xy = null; return; }
+        o.el.style.visibility = 'visible';
+        const w = o.el.offsetWidth, izq = (xy[0] - 12 + w > W - 6) && (xy[0] + 12 - w >= 6);   // el rotulo pasa a la izquierda si se sale por la derecha
+        o.el.classList.toggle('izq', izq);
+        o.el.style.transform = 'translate(' + Math.round(izq ? xy[0] + 12 - w : xy[0] - 12) + 'px,' + Math.round(xy[1] - 12) + 'px)';
+        o.xy = xy;
+      });
+    }
+    async function pulsaMueble(o){
+      if (cambiando || saltando || !listo || o.dest === null) return;
+      const desde = estadoAqui(), a = o.dest;
+      if (a === desde || !hay(cur, a)) return;
+      if (desde !== CM.guardado) anteriorM = desde;
+      await cambiaMomento(a);
+    }
+    function rotulaMueble(m){
+      const el = $('#estadoMueble'), aqui = !!CM && P[cur].id === CM.punto;
+      el.hidden = !aqui;
+      if (aqui) el.textContent = CM.titulos[m] || '';
+    }
+
     const momentoEl = $('#momento');
     function armaMomento(){
       const nombres = R.estados_nombres || [];
       momentoEl.innerHTML = nombres.map((t, k) => '<button type="button" data-m="' + k + '">' + esc(t) + '</button>').join('');
-      momentoEl.hidden = nombres.length < 2;
+      momentoEl.hidden = nombres.length < 2 || !!CM;      // con mueble, los estados se cambian con los circulos amarillos
       momentoEl.querySelectorAll('button').forEach(b => b.addEventListener('click', () => cambiaMomento(+b.dataset.m)));
     }
     let minis = {};
@@ -589,7 +657,8 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       const m = hay(cur, momento) ? momento : 0;
       momentoEl.querySelectorAll('button').forEach(b => { const k = +b.dataset.m; b.classList.toggle('on', k === m); b.setAttribute('aria-pressed', String(k === m)); b.disabled = !hay(cur, k); });
       tira.querySelectorAll('img[data-i]').forEach(im => { const i = +im.dataset.i, mm = hay(i, momento) ? momento : 0; const u = ruta1(i, mm, 'mini'); if (u) mini(u).then(s => { if (im.getAttribute('src') !== s) im.src = s; }).catch(() => {}); });
-      $('#vCeja').textContent = [R.titulo, R.estados_nombres.length > 1 ? nombreEstado() : ''].filter(Boolean).join(' · ');
+      $('#vCeja').textContent = [R.titulo, R.estados_nombres.length > 1 && !CM ? nombreEstado() : ''].filter(Boolean).join(' · ');
+      rotulaMueble(m);
     }
 
     // ---- cambiar de punto (el rumbo se conserva: llegas mirando hacia donde ibas)
@@ -743,7 +812,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 
     // ---- abrir / cerrar un recorrido
     function abre(Rn){
-      gen++; R = Rn; C = R.datos; P = C.puntos; porId = {}; P.forEach((p, i) => { porId[p.id] = i; });
+      gen++; R = Rn; C = R.datos; P = C.puntos; CM = C.mueble || null; anteriorM = 0; porId = {}; P.forEach((p, i) => { porId[p.id] = i; });
       if (!R.estados_nombres || !R.estados_nombres.length) R.estados_nombres = C.estados || [''];
       cur = (C.inicio in porId) ? porId[C.inicio] : 0; momento = C.momento_inicial || 0;
       yaw = 0; pitch = 0; zoomL = zoomInicial(); ajustaFov(); foco = -1; listo = false; saltando = false; cambiando = false; desfaseGiro = null;
@@ -754,6 +823,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       $('#vTitulo').textContent = P[cur].titulo; $('#vTexto').textContent = P[cur].texto || ''; rotulaMomento();
       pista.textContent = tactil ? 'Arrastra para mirar · pellizca para acercar · toca un anillo o una miniatura para saltar · un toque oculta los controles'
                                  : 'Arrastra para mirar · rueda para acercar · clic en un anillo, un rótulo o una miniatura para saltar · teclas 1–' + P.length + ' y flechas';
+      if (CM) { const pm = P[porId[CM.punto]]; pista.textContent += ' · en ' + (pm ? pm.corto : CM.punto) + ', los círculos amarillos cambian el mueble'; }
       pista.classList.remove('fuera');
       marcas.textContent = '';
       activo = true; tam(); libera(); gl.clearColor(0.047, 0.063, 0.071, 1); gl.clear(gl.COLOR_BUFFER_BIT);
