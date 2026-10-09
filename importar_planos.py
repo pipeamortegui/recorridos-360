@@ -2,10 +2,12 @@
 
 Uso:
     python importar_planos.py --id PRY-0005_planos --titulo "Nhà Nước · planos" --proyecto PRY-0005 LAMINA1.jpg LAMINA2.png ...
-                              [--nombre "G-03=Planta de la casa · 1:25"] [--orden G,A,T,I,F,D] [--concurso "..."]
+                              [--nombre "G-03=Planta de la casa · 1:25"] [--orden G,A,T,I,F,D] [--concurso "..."] [--tipo tecnico]
 
 El codigo de cada lamina sale del nombre del archivo (G-03, T-04, F-01...): "G-03 Planta de la casa.jpg" da
-codigo G-03 y titulo "Planta de la casa". --nombre cambia el titulo de un codigo (se puede repetir).
+codigo G-03 y titulo "Planta de la casa". --nombre cambia el titulo de un codigo (se puede repetir); con
+"S-02=Energía: del techo al enchufe|Energía" la parte despues de | es el nombre corto de la tira de miniaturas.
+--tipo tecnico pone el juego en la seccion "Diseños técnicos" en vez de "Planos".
 Si el juego ya existe, las laminas nuevas se suman y las de un codigo repetido se reemplazan.
 El orden va por serie (--orden, por defecto G, A, T, I, F, D) y luego por numero.
 Despues: python publicar.py --subir
@@ -42,7 +44,7 @@ def clave_orden(orden):
     return k
 
 
-def importa(rutas, ident, titulo, proyecto="", concurso=None, nombres=None, orden="G,A,T,I,F,D"):
+def importa(rutas, ident, titulo, proyecto="", concurso=None, nombres=None, orden="G,A,T,I,F,D", tipo=None):
     ident = re.sub(r"[^A-Za-z0-9._~-]", "-", ident)        # el id viaja en el #hash de la URL
     carpeta = os.path.join(RECORRIDOS, ident)
     os.makedirs(carpeta, exist_ok=True)
@@ -54,7 +56,7 @@ def importa(rutas, ident, titulo, proyecto="", concurso=None, nombres=None, orde
     for i, ruta in enumerate(rutas):
         codigo, tit = codigo_y_titulo(ruta)
         codigo = codigo or f"L-{len(hojas) + 1:02d}"
-        tit = nombres.get(codigo, tit or (hojas.get(codigo) or {}).get("titulo", ""))
+        tit = nombres.get(codigo, (tit or (hojas.get(codigo) or {}).get("titulo", ""), None))[0]
         im = ImageOps.exif_transpose(Image.open(ruta)).convert("RGB")
         nom = codigo.lower()
         ancho, alto = guarda(im, os.path.join(carpeta, nom + ".jpg"), 8192, 90)
@@ -63,12 +65,17 @@ def importa(rutas, ident, titulo, proyecto="", concurso=None, nombres=None, orde
             guarda(im, os.path.join(carpeta, nom + "-media.jpg"), MEDIA, 84)
             media = f"recorridos/{ident}/{nom}-media.jpg"
         guarda(im, os.path.join(carpeta, nom + "-mini.jpg"), MINI, 80)
+        antes = hojas.get(codigo, {})
         hojas[codigo] = {"codigo": codigo, "titulo": tit, "ancho": ancho, "alto": alto, "fuente": os.path.basename(ruta),
                          "imagen": f"recorridos/{ident}/{nom}.jpg", "media": media, "mini": f"recorridos/{ident}/{nom}-mini.jpg"}
+        if antes.get("corto"):
+            hojas[codigo]["corto"] = antes["corto"]        # al reemplazar una lamina se conserva su nombre corto
         print(f"    {codigo}  {tit}  ({ancho} x {alto} px)")
-    for codigo, tit in nombres.items():
+    for codigo, (tit, corto) in nombres.items():
         if codigo in hojas:
             hojas[codigo]["titulo"] = tit
+            if corto:
+                hojas[codigo]["corto"] = corto
 
     laminas = sorted(hojas.values(), key=clave_orden([s.strip().upper() for s in orden.split(",")]))
 
@@ -82,7 +89,7 @@ def importa(rutas, ident, titulo, proyecto="", concurso=None, nombres=None, orde
 
     ficha = {
         "id": ident,
-        "tipo": "planos",
+        "tipo": tipo or previo.get("tipo", "planos"),
         "titulo": titulo or previo.get("titulo", ident),
         "proyecto": proyecto or previo.get("proyecto", ""),
         "concurso": concurso if concurso is not None else previo.get("concurso", ""),
@@ -113,6 +120,7 @@ if __name__ == "__main__":
     ap.add_argument("--concurso", default=None, help="nombre del concurso que agrupa en la galeria")
     ap.add_argument("--nombre", action="append", default=[], help='titulo de una lamina: "G-03=Planta de la casa · 1:25"')
     ap.add_argument("--orden", default="G,A,T,I,F,D", help="orden de las series (por defecto G,A,T,I,F,D)")
+    ap.add_argument("--tipo", choices=["planos", "tecnico"], default=None, help='seccion de la galeria: planos (por defecto) o tecnico ("Diseños técnicos")')
     a = ap.parse_args()
     falta = [r for r in a.laminas if not os.path.exists(r)]
     if falta:
@@ -121,7 +129,8 @@ if __name__ == "__main__":
     for n in a.nombre:
         if "=" not in n:
             sys.exit('--nombre va asi: "G-03=Planta de la casa · 1:25"')
-        c, t = n.split("=", 1); nombres[c.strip().upper()] = t.strip()
-    importa(a.laminas, a.id, a.titulo, a.proyecto, a.concurso, nombres, a.orden)
+        c, t = n.split("=", 1); t, _, corto = t.partition("|")
+        nombres[c.strip().upper()] = (t.strip(), corto.strip() or None)
+    importa(a.laminas, a.id, a.titulo, a.proyecto, a.concurso, nombres, a.orden, a.tipo)
     if os.path.exists(os.path.join(WEB, "index.html")):
         artefacto()

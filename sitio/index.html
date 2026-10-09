@@ -211,10 +211,11 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 #explorador { position:fixed; inset:0; background:#000; --tira:0px; }
 #explorador.con-tira { --tira:84px; }
 .tarjeta.planos .foto::after { content:"Planos"; font-family:var(--sans); }
+.tarjeta.tecnico .foto::after { content:"Diseño técnico"; }
 #eImg.cambia { opacity:0; transition:opacity .16s ease; }
 #eTira { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(12px + var(--sb)); display:flex; gap:8px; padding:7px; max-width:calc(100vw - 32px); overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
 #eTira::-webkit-scrollbar { display:none; }
-#eTira button { flex:0 0 auto; display:grid; gap:4px; justify-items:center; padding:4px 4px 5px; border-radius:9px; font:500 11px/1.1 var(--mono); background:transparent; border:1px solid var(--borde); cursor:pointer; color:var(--texto); }
+#eTira button { flex:0 0 auto; display:grid; gap:4px; justify-items:center; padding:4px 4px 5px; border-radius:9px; font:500 11px/1.1 var(--mono); max-width:84px; background:transparent; border:1px solid var(--borde); cursor:pointer; color:var(--texto); }
 #eTira button img { width:72px; height:51px; border-radius:4px; display:block; object-fit:cover; background:#2a2f31; }
 #eTira button[aria-current="true"] { border-color:var(--acento); color:var(--acento); background:rgba(217,179,108,.12); }
 #eNum { font-family:var(--mono); color:var(--acento); }
@@ -445,7 +446,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   // ================= GALERIA =================
   function tarjeta(c, destacada){
     const est = (c.estados || []).filter(Boolean);
-    const h = '#' + encodeURIComponent(c.id), img = c.tipo === 'imagen', pl = c.tipo === 'planos';
+    const h = '#' + encodeURIComponent(c.id), img = c.tipo === 'imagen', pl = c.tipo === 'planos' || c.tipo === 'tecnico', tec = c.tipo === 'tecnico';
     if (c.tipo === 'orbita') return '<li' + (destacada ? ' style="grid-column:1/-1"' : '') + '><article class="tarjeta orbita' + (destacada ? ' destacada' : '') + '" data-id="' + esc(c.id) + '">' +
       '<div class="foto" data-portada="' + esc(c.portada) + '" role="img" aria-label="Órbita de ' + esc(c.titulo) + '"></div>' +
       '<div class="info"><div class="ceja">' + esc([c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Órbita') + '</div>' +
@@ -453,13 +454,13 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       '<div class="meta"><span class="chip">Órbita 360°</span><span class="chip num">' + c.fotogramas + ' fotogramas</span>' + (c.fijas ? '<span class="chip num">' + c.fijas + (c.fijas === 1 ? ' vista fija' : ' vistas fijas') + '</span>' : '') +
       (c.fecha ? '<span class="chip num">' + esc(fechaTxt(c.fecha)) + '</span>' : '') + '</div>' +
       '<div class="acciones"><a class="con" href="' + h + '">Girar alrededor <svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></article></li>';
-    if (pl) return '<li' + (destacada ? ' style="grid-column:1/-1"' : '') + '><article class="tarjeta planos' + (destacada ? ' destacada' : '') + '" data-id="' + esc(c.id) + '">' +
-      '<div class="foto" data-portada="' + esc(c.portada) + '" role="img" aria-label="Planos de ' + esc(c.titulo) + '"></div>' +
-      '<div class="info"><div class="ceja">' + esc([c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Planos') + '</div>' +
+    if (pl) return '<li' + (destacada ? ' style="grid-column:1/-1"' : '') + '><article class="tarjeta planos' + (tec ? ' tecnico' : '') + (destacada ? ' destacada' : '') + '" data-id="' + esc(c.id) + '">' +
+      '<div class="foto" data-portada="' + esc(c.portada) + '" role="img" aria-label="' + (tec ? 'Diseños técnicos de ' : 'Planos de ') + esc(c.titulo) + '"></div>' +
+      '<div class="info"><div class="ceja">' + esc([c.proyecto, c.concurso].filter(Boolean).join(' · ') || (tec ? 'Diseños técnicos' : 'Planos')) + '</div>' +
       '<h3><a href="' + h + '">' + esc(c.titulo) + '</a></h3>' +
-      '<div class="meta"><span class="chip">Planos</span><span class="chip num">' + c.laminas.length + (c.laminas.length === 1 ? ' lámina' : ' láminas') + '</span>' +
+      '<div class="meta"><span class="chip">' + (tec ? 'Diseño técnico' : 'Planos') + '</span><span class="chip num">' + c.laminas.length + (c.laminas.length === 1 ? ' lámina' : ' láminas') + '</span>' +
       (c.fecha ? '<span class="chip num">' + esc(fechaTxt(c.fecha)) + '</span>' : '') + '</div>' +
-      '<div class="acciones"><a class="con" href="' + h + '">Ver los planos <svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></article></li>';
+      '<div class="acciones"><a class="con" href="' + h + '">' + (tec ? 'Ver los diseños' : 'Ver los planos') + ' <svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></article></li>';
     const chips = img ? '<span class="chip">Imagen</span>' + (c.ancho ? '<span class="chip num">' + c.ancho + ' × ' + c.alto + ' px</span>' : '')
                       : '<span class="chip num">' + c.puntos + ' puntos</span>' + (est.length > 2 ? '<span class="chip">' + est.length + ' estados</span>' : est.map(e => '<span class="chip">' + esc(e) + '</span>').join(''));
     const acciones = img ? '<a class="con" href="' + h + '">Explorar la imagen <svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>'
@@ -474,7 +475,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       '<div class="acciones">' + acciones + '</div></div></article></li>';
   }
   // la galeria va por secciones, una por tipo; los botones de arriba muestran una sola o todas
-  const SECCIONES = [['360', 'Recorridos 360'], ['orbita', 'Órbitas'], ['imagen', 'Imágenes'], ['planos', 'Planos']];
+  const SECCIONES = [['360', 'Recorridos 360'], ['orbita', 'Órbitas'], ['imagen', 'Imágenes'], ['planos', 'Planos'], ['tecnico', 'Diseños técnicos']];
   const tipoDe = c => c.tipo || '360';
   let seccion = 'todo';
   try { seccion = localStorage.getItem('r360-seccion') || 'todo'; } catch (e) {}
@@ -510,7 +511,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     if (cifrado && !clave) return;
     const [id, op] = decodeURIComponent(location.hash.replace(/^#/, '')).split('?');
     const c = id && catalogo.find(x => x.id === id);
-    if (c && (c.tipo === 'imagen' || c.tipo === 'planos')) abreImagen(c, op);
+    if (c && (c.tipo === 'imagen' || c.tipo === 'planos' || c.tipo === 'tecnico')) abreImagen(c, op);
     else if (c && c.tipo === 'orbita') abreOrbita(c);
     else if (c) { ponRotulos(op !== SIN_ROTULOS.slice(1)); abreVisor(c); } else muestraGaleria();
   }
@@ -953,7 +954,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       C = c; hojas = c.laminas || [c]; cache = new Map();
       exploradorEl.classList.remove('limpio'); exploradorEl.classList.toggle('con-tira', hojas.length > 1);
       tira.hidden = hojas.length < 2;
-      tira.innerHTML = hojas.length < 2 ? '' : hojas.map((h, i) => '<button type="button" data-i="' + i + '" title="' + esc((h.codigo ? h.codigo + ' · ' : '') + (h.titulo || '')) + '"><img alt="" data-mini="' + esc(h.mini || h.media || h.imagen) + '"><span>' + esc(h.codigo || String(i + 1)) + '</span></button>').join('');
+      tira.innerHTML = hojas.length < 2 ? '' : hojas.map((h, i) => '<button type="button" data-i="' + i + '" title="' + esc((h.codigo && !h.corto ? h.codigo + ' · ' : '') + (h.titulo || '')) + '"><img alt="" data-mini="' + esc(h.mini || h.media || h.imagen) + '"><span>' + esc(h.corto || h.codigo || String(i + 1)) + '</span></button>').join('');
       tira.querySelectorAll('button').forEach(b => b.addEventListener('click', () => muestra(+b.dataset.i)));
       tira.querySelectorAll('img[data-mini]').forEach(im => urlDe(im.dataset.mini).then(u => { im.src = u; }).catch(() => {}));
       const varias = hojas.length > 1;
@@ -970,10 +971,10 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       if (i < 0 || i >= hojas.length || (!primera && i === k && listo)) return;
       const g = ++gen, h = hojas[i]; k = i; para(); pts.clear();
       const varias = hojas.length > 1;
-      $('#eCeja').innerHTML = esc([C.proyecto, C.concurso].filter(Boolean).join(' · ') || (C.tipo === 'planos' ? 'Planos' : 'Imagen')) + (varias ? ' · <span id="eNum">' + (i + 1) + ' / ' + hojas.length + '</span>' : '');
-      $('#eTitulo').textContent = varias ? (h.codigo ? h.codigo + ' · ' : '') + (h.titulo || '') : C.titulo;
+      $('#eCeja').innerHTML = esc([C.proyecto, C.concurso].filter(Boolean).join(' · ') || (C.tipo === 'planos' ? 'Planos' : C.tipo === 'tecnico' ? 'Diseños técnicos' : 'Imagen')) + (varias ? ' · <span id="eNum">' + (i + 1) + ' / ' + hojas.length + '</span>' : '');
+      $('#eTitulo').textContent = varias ? (h.codigo && !h.corto ? h.codigo + ' · ' : '') + (h.titulo || '') : C.titulo;
       const t = $('#eTexto'), tx = varias ? (h.texto || '') : (C.texto || ''); t.textContent = tx; t.hidden = !tx;
-      document.title = varias ? (h.codigo || '') + ' · ' + C.titulo : C.titulo;
+      document.title = varias ? (h.corto || h.codigo || '') + ' · ' + C.titulo : C.titulo;
       tira.querySelectorAll('button').forEach(b => { const on = +b.dataset.i === i; b.setAttribute('aria-current', String(on)); if (on) b.scrollIntoView({block:'nearest', inline:'center', behavior: reducido ? 'auto' : 'smooth'}); });
       if (varias && h.codigo) { try { history.replaceState(history.state, '', '#' + encodeURIComponent(C.id) + '?l=' + encodeURIComponent(h.codigo)); } catch (e) {} }
       const espera = setTimeout(() => { if (g === gen) cargando.hidden = false; }, 250);
