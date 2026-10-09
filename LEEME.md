@@ -1,6 +1,6 @@
 # Recorridos 360
 
-App web para mostrar los 360 de concurso en iPad y iPhone: una galería de recorridos y un visor (arrastrar, pellizcar, anillos y rótulos para saltar, plano con cono de visión, giroscopio, notas, ocultar controles). También muestra imágenes planas (renders) con un explorador: arrastrar, pellizcar, doble toque y mini-mapa.
+App web para mostrar los 360 de concurso en iPad y iPhone: una galería de recorridos y un visor (arrastrar, pellizcar, anillos y rótulos para saltar, plano con cono de visión, giroscopio, notas, ocultar controles). También muestra imágenes planas (renders) y juegos de planos con un explorador: arrastrar, pellizcar, doble toque, mini-mapa y tira de láminas.
 
 URL pública, con contraseña: https://pipeamortegui.github.io/recorridos-360/
 
@@ -37,6 +37,15 @@ python publicar.py --subir
 ```
 
 En la galería sale con el botón **Explorar la imagen**: se arrastra para recorrerla, se pellizca (o rueda del ratón) para acercar, doble toque para acercar donde tocaste, y el mini-mapa de la esquina lleva a cualquier zona. Acepta imágenes de hasta 8K (8192 px de lado largo; `--max` cambia el tope). La app abre primero una copia liviana de 2400 px y cambia a la completa cuando termina de bajar.
+
+## Agregar planos (un juego de láminas)
+
+```
+python importar_planos.py --id PRY-0005_planos --titulo "Nhà Nước · planos" --proyecto PRY-0005 "C:\ruta\G-03 Planta de la casa.jpg" "C:\ruta\G-04 Planta de cubierta.jpg"
+python publicar.py --subir
+```
+
+El código de cada lámina sale del nombre del archivo (`G-03`, `T-04`, `F-01`...) y el resto del nombre es su título. `--nombre "G-03=Planta de la casa · 1:25"` cambia un título. Si el juego ya existe, las láminas nuevas se suman y las de un código repetido se reemplazan; el orden va por serie (G, A, T, I, F, D) y número. En la app: tira de miniaturas abajo, deslizar de lado (o flechas ← →) con la lámina completa para pasar a la siguiente, y cada lámina tiene su enlace (`#PRY-0005_planos?l=G-03`). Mejor exportarlas grandes (PNG o JPG de 4000 a 8000 px) para leer los textos al acercar.
 
 ## Probar en local
 

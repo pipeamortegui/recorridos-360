@@ -209,25 +209,35 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 /* ================= EXPLORADOR DE IMAGEN (renders planos: arrastrar, pellizcar, doble toque, mini-mapa) ================= */
 .tarjeta.imagen .foto::after { content:"Imagen"; font-family:var(--sans); }
 #explorador { position:fixed; inset:0; background:#000; --tira:0px; }
+#explorador.con-tira { --tira:84px; }
+.tarjeta.planos .foto::after { content:"Planos"; font-family:var(--sans); }
+#eImg.cambia { opacity:0; transition:opacity .16s ease; }
+#eTira { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(12px + var(--sb)); display:flex; gap:8px; padding:7px; max-width:calc(100vw - 32px); overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
+#eTira::-webkit-scrollbar { display:none; }
+#eTira button { flex:0 0 auto; display:grid; gap:4px; justify-items:center; padding:4px 4px 5px; border-radius:9px; font:500 11px/1.1 var(--mono); background:transparent; border:1px solid var(--borde); cursor:pointer; color:var(--texto); }
+#eTira button img { width:72px; height:51px; border-radius:4px; display:block; object-fit:cover; background:#2a2f31; }
+#eTira button[aria-current="true"] { border-color:var(--acento); color:var(--acento); background:rgba(217,179,108,.12); }
+#eNum { font-family:var(--mono); color:var(--acento); }
 #eLienzo { position:absolute; inset:0; overflow:hidden; touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none; }
 #eLienzo.arrastra { cursor:grabbing; }
 #eImg { position:absolute; left:0; top:0; transform-origin:0 0; max-width:none; will-change:transform; -webkit-user-drag:none; pointer-events:none; opacity:0; transition:opacity .3s ease; }
 #eImg.lista { opacity:1; }
 #eCargando { position:absolute; left:50%; top:50%; width:34px; height:34px; margin:-17px 0 0 -17px; border-radius:50%; border:2px solid var(--borde); border-top-color:var(--acento); animation:gira 0.9s linear infinite; pointer-events:none; }
 #explorador.limpio .ui { opacity:0; pointer-events:none !important; }
-#eMapa { position:absolute; left:var(--sl); bottom:calc(12px + var(--sb)); width:min(220px, 34vw); padding:5px; border-radius:10px; cursor:pointer; touch-action:none; }
+#eMapa { position:absolute; left:var(--sl); bottom:calc(var(--tira) + 24px + var(--sb)); width:min(220px, 34vw); padding:5px; border-radius:10px; cursor:pointer; touch-action:none; }
 #eMapa img { display:block; width:100%; height:auto; border-radius:6px; opacity:.85; pointer-events:none; }
 #eMarco { position:absolute; border:1.5px solid var(--acento); border-radius:2px; box-shadow:0 0 0 999px rgba(12,16,18,.45); pointer-events:none; }
 #eMapaCaja { position:relative; overflow:hidden; border-radius:6px; }
 #eZoom { position:absolute; right:6px; bottom:6px; font:500 11px/1 var(--mono); padding:4px 6px; border-radius:6px; background:rgba(12,16,18,.75); color:var(--texto); pointer-events:none; }
-#ePista { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(14px + var(--sb)); padding:8px 14px; font-size:12.5px; color:var(--tenue); border-radius:999px; transition:opacity .4s ease; text-align:center; max-width:calc(100vw - 2 * 240px); }
+#ePista { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(var(--tira) + 26px + var(--sb)); padding:8px 14px; font-size:12.5px; color:var(--tenue); border-radius:999px; transition:opacity .4s ease; text-align:center; max-width:calc(100vw - 2 * 240px); }
 #ePista.fuera { opacity:0; pointer-events:none; }
 @media (max-width:640px) {
-  #explorador .herr { top:auto; bottom:calc(12px + var(--sb)); }
+  #explorador .herr { top:auto; bottom:calc(var(--tira) + 24px + var(--sb)); }
   #eMapa { width:min(150px, 40vw); }
+  #eTira { left:12px; right:12px; transform:none; max-width:none; bottom:calc(8px + var(--sb)); }
   #ePista { display:none; }
 }
-@media (max-height:520px) and (orientation:landscape) { #eMapa { width:min(170px, 28vw); } #ePista { display:none; } }
+@media (max-height:520px) and (orientation:landscape) { #eMapa { width:min(170px, 28vw); } #ePista { display:none; } #explorador.con-tira { --tira:72px; } #eTira button img { width:58px; height:41px; } }
 @media (prefers-reduced-motion: reduce) { #eImg, #ePista { transition:none; } #eCargando { animation-duration:3s; } }
 </style>
 
@@ -307,6 +317,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   </div>
   <div id="eMapa" class="panel ui" role="button" tabindex="-1" aria-label="Mini-mapa: toca para ir a esa zona"><div id="eMapaCaja"><img id="eMapaImg" alt=""><div id="eMarco"></div><div id="eZoom">1×</div></div></div>
   <div id="ePista" class="panel ui"></div>
+  <nav id="eTira" class="panel ui" aria-label="Láminas" hidden></nav>
 </section>
 
 <script>
@@ -353,7 +364,14 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   // ================= GALERIA =================
   function tarjeta(c, destacada){
     const est = (c.estados || []).filter(Boolean);
-    const h = '#' + encodeURIComponent(c.id), img = c.tipo === 'imagen';
+    const h = '#' + encodeURIComponent(c.id), img = c.tipo === 'imagen', pl = c.tipo === 'planos';
+    if (pl) return '<li' + (destacada ? ' style="grid-column:1/-1"' : '') + '><article class="tarjeta planos' + (destacada ? ' destacada' : '') + '" data-id="' + esc(c.id) + '">' +
+      '<div class="foto" data-portada="' + esc(c.portada) + '" role="img" aria-label="Planos de ' + esc(c.titulo) + '"></div>' +
+      '<div class="info"><div class="ceja">' + esc([c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Planos') + '</div>' +
+      '<h3><a href="' + h + '">' + esc(c.titulo) + '</a></h3>' +
+      '<div class="meta"><span class="chip">Planos</span><span class="chip num">' + c.laminas.length + (c.laminas.length === 1 ? ' lámina' : ' láminas') + '</span>' +
+      (c.fecha ? '<span class="chip num">' + esc(fechaTxt(c.fecha)) + '</span>' : '') + '</div>' +
+      '<div class="acciones"><a class="con" href="' + h + '">Ver los planos <svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></article></li>';
     const chips = img ? '<span class="chip">Imagen</span>' + (c.ancho ? '<span class="chip num">' + c.ancho + ' × ' + c.alto + ' px</span>' : '')
                       : '<span class="chip num">' + c.puntos + ' puntos</span>' + (est.length > 2 ? '<span class="chip">' + est.length + ' estados</span>' : est.map(e => '<span class="chip">' + esc(e) + '</span>').join(''));
     const acciones = img ? '<a class="con" href="' + h + '">Explorar la imagen <svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>'
@@ -392,7 +410,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     if (cifrado && !clave) return;
     const [id, op] = decodeURIComponent(location.hash.replace(/^#/, '')).split('?');
     const c = id && catalogo.find(x => x.id === id);
-    if (c && c.tipo === 'imagen') abreImagen(c);
+    if (c && (c.tipo === 'imagen' || c.tipo === 'planos')) abreImagen(c, op);
     else if (c) { ponRotulos(op !== SIN_ROTULOS.slice(1)); abreVisor(c); } else muestraGaleria();
   }
   // #id abre con los rotulos de los espacios; #id?sin-rotulos, sin ellos (el boton Rotulos del visor alterna)
@@ -418,13 +436,15 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     catch (e) { V.avisa('No se pudo abrir este recorrido. Revisa la conexión y vuelve a intentar.'); }
   }
   function volver(){ if (vinoDeGaleria && history.length > 1) history.back(); else location.hash = ''; vinoDeGaleria = false; }
-  function abreImagen(c){
-    if (abierto === c.id) return;
+  // imagenes y juegos de planos: #id abre la primera lamina; #id?l=G-03, esa lamina
+  function abreImagen(c, op){
+    const lam = op && op.startsWith('l=') ? op.slice(2) : null;
+    if (abierto === c.id) { if (lam) E.irA(lam); return; }
     cierraAbierto();
     abierto = c.id; galeria.hidden = true; exploradorEl.hidden = false; document.body.classList.add('en-visor'); window.scrollTo(0, 0);
     document.title = c.titulo;
     if (!E) E = creaExplorador();
-    E.abre(c);
+    E.abre(c, lam);
   }
   window.addEventListener('hashchange', ruta);
   $('#bVolver').addEventListener('click', volver);
@@ -438,7 +458,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     const caja = $('#eLienzo'), img = $('#eImg'), mapa = $('#eMapa'), mapaImg = $('#eMapaImg'), marco = $('#eMarco'), zoomTxt = $('#eZoom'), pista = $('#ePista'), cargando = $('#eCargando');
     const tactil = !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
     const reducido = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    let iw = 1, ih = 1, W = 1, H = 1, s = 1, x = 0, y = 0, sMin = 1, sMax = 4, urls = [], gen = 0, listo = false, anim = 0, inercia = 0;
+    let iw = 1, ih = 1, W = 1, H = 1, s = 1, x = 0, y = 0, sMin = 1, sMax = 4, urls = [], C = null, hojas = [], k = 0, cache = new Map(), solo1 = true, x00 = 0, y00 = 0, gen = 0, listo = false, anim = 0, inercia = 0;
 
     function medidas(){ W = caja.clientWidth || 1; H = caja.clientHeight || 1; sMin = Math.min(W / iw, H / ih); sMax = Math.max(sMin * 6, Math.max(W / iw, H / ih) * 3); }
     function limita(){
@@ -496,7 +516,8 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     caja.addEventListener('pointerdown', e => {
       if (!listo) return;
       try { caja.setPointerCapture(e.pointerId); } catch (err) {}
-      para(); pts.set(e.pointerId, local(e)); if (pts.size === 1) movido = 0; inicioGesto(); vel = [0, 0]; tPrev = performance.now();
+      para(); pts.set(e.pointerId, local(e)); if (pts.size === 1) { movido = 0; solo1 = true; [x00, y00] = local(e); } else solo1 = false;
+      inicioGesto(); vel = [0, 0]; tPrev = performance.now();
       caja.classList.add('arrastra'); tocado();
     });
     caja.addEventListener('pointermove', e => {
@@ -521,6 +542,9 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       caja.classList.remove('arrastra');
       if (s < sMin) { animaA(sMin, W / 2, H / 2, 220); return; }
       pinta();
+      // con la lamina completa en pantalla, deslizar de lado pasa a la siguiente o a la anterior
+      const dx = xy[0] - x00, dy = xy[1] - y00;
+      if (hojas.length > 1 && solo1 && s <= sMin * 1.03 && Math.abs(dx) > 60 && Math.abs(dx) > 1.6 * Math.abs(dy)) { muestra(k + (dx < 0 ? 1 : -1)); return; }
       if (movido < 8 && e.type === 'pointerup') {          // toque: doble = acercar / volver; simple (en tactil) = mostrar u ocultar controles
         const now = performance.now();
         if (now - ultTap < 320 && Math.hypot(xy[0] - ultXY[0], xy[1] - ultXY[1]) < 40) {
@@ -549,12 +573,15 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       zoomEn(s * Math.exp(-d * 0.0018), xy[0], xy[1]);
     }, {passive:false});
     caja.addEventListener('dblclick', e => e.preventDefault());
+    const this_k = () => k;
     caja.addEventListener('keydown', e => {
       if (!listo) return;
       const k = e.key, paso = 60;
       if (k === '+' || k === '=') animaA(s * 1.5, W / 2, H / 2, 200);
       else if (k === '-') animaA(s / 1.5, W / 2, H / 2, 200);
       else if (k === '0') entera(250);
+      else if (k === 'PageDown' || (k === 'ArrowRight' && s <= sMin * 1.03 && hojas.length > 1)) muestra(this_k() + 1);
+      else if (k === 'PageUp' || (k === 'ArrowLeft' && s <= sMin * 1.03 && hojas.length > 1)) muestra(this_k() - 1);
       else if (k === 'ArrowLeft') { x += paso; pinta(); } else if (k === 'ArrowRight') { x -= paso; pinta(); }
       else if (k === 'ArrowUp') { y += paso; pinta(); } else if (k === 'ArrowDown') { y -= paso; pinta(); }
       else return;
@@ -594,36 +621,60 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       medidas(); s = sMin * z; x = W / 2 - fx * iw * s; y = H / 2 - fy * ih * s; pinta();
     }).observe(caja);
 
-    async function abre(c){
-      const g = ++gen; listo = false; para(); pts.clear();
-      exploradorEl.classList.remove('limpio');
-      $('#eCeja').textContent = [c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Imagen';
-      $('#eTitulo').textContent = c.titulo; const t = $('#eTexto'); t.textContent = c.texto || ''; t.hidden = !c.texto;
-      pista.textContent = tactil ? 'Arrastra para recorrer · pellizca o toca dos veces para acercar · un toque oculta los controles'
-                                 : 'Arrastra para recorrer · rueda o doble clic para acercar · el mini-mapa lleva a cualquier zona';
+    const carga = u => new Promise((ok, mal) => { const im = new Image(); im.onload = () => ok(im); im.onerror = mal; im.src = u; if (im.decode) im.decode().then(() => ok(im)).catch(() => {}); });
+    const tira = $('#eTira');
+    // url (blob si esta cifrado) de una lamina; se guardan para que volver a una lamina sea inmediato
+    function urlDe(logica){ if (!cache.has(logica)) cache.set(logica, urlImagen(logica).then(u => { urls.push(u); return u; })); return cache.get(logica); }
+    function abre(c, lam){
+      C = c; hojas = c.laminas || [c]; cache = new Map();
+      exploradorEl.classList.remove('limpio'); exploradorEl.classList.toggle('con-tira', hojas.length > 1);
+      tira.hidden = hojas.length < 2;
+      tira.innerHTML = hojas.length < 2 ? '' : hojas.map((h, i) => '<button type="button" data-i="' + i + '" title="' + esc((h.codigo ? h.codigo + ' · ' : '') + (h.titulo || '')) + '"><img alt="" data-mini="' + esc(h.mini || h.media || h.imagen) + '"><span>' + esc(h.codigo || String(i + 1)) + '</span></button>').join('');
+      tira.querySelectorAll('button').forEach(b => b.addEventListener('click', () => muestra(+b.dataset.i)));
+      tira.querySelectorAll('img[data-mini]').forEach(im => urlDe(im.dataset.mini).then(u => { im.src = u; }).catch(() => {}));
+      const varias = hojas.length > 1;
+      pista.textContent = (tactil ? 'Arrastra para recorrer · pellizca o toca dos veces para acercar' : 'Arrastra para recorrer · rueda o doble clic para acercar') +
+                          (varias ? (tactil ? ' · desliza de lado para cambiar de lámina' : ' · flechas ← → para cambiar de lámina') : ' · el mini-mapa lleva a cualquier zona');
+      const g = gen + 1;
       pista.classList.remove('fuera'); setTimeout(() => { if (g === gen) pista.classList.add('fuera'); }, 7000);
-      img.classList.remove('lista'); cargando.hidden = false;
-      const carga = u => new Promise((ok, mal) => { const im = new Image(); im.onload = () => ok(im); im.onerror = mal; im.src = u; if (im.decode) im.decode().then(() => ok(im)).catch(() => {}); });
+      img.classList.remove('lista');
+      const i0 = lam ? hojas.findIndex(h => h.codigo === lam) : 0;
+      muestra(i0 < 0 ? 0 : i0, true);
+    }
+    function irA(lam){ const i = hojas.findIndex(h => h.codigo === lam); if (i >= 0 && i !== k) muestra(i); }
+    async function muestra(i, primera){
+      if (i < 0 || i >= hojas.length || (!primera && i === k && listo)) return;
+      const g = ++gen, h = hojas[i]; k = i; para(); pts.clear();
+      const varias = hojas.length > 1;
+      $('#eCeja').innerHTML = esc([C.proyecto, C.concurso].filter(Boolean).join(' · ') || (C.tipo === 'planos' ? 'Planos' : 'Imagen')) + (varias ? ' · <span id="eNum">' + (i + 1) + ' / ' + hojas.length + '</span>' : '');
+      $('#eTitulo').textContent = varias ? (h.codigo ? h.codigo + ' · ' : '') + (h.titulo || '') : C.titulo;
+      const t = $('#eTexto'), tx = varias ? (h.texto || '') : (C.texto || ''); t.textContent = tx; t.hidden = !tx;
+      document.title = varias ? (h.codigo || '') + ' · ' + C.titulo : C.titulo;
+      tira.querySelectorAll('button').forEach(b => { const on = +b.dataset.i === i; b.setAttribute('aria-current', String(on)); if (on) b.scrollIntoView({block:'nearest', inline:'center', behavior: reducido ? 'auto' : 'smooth'}); });
+      if (varias && h.codigo) { try { history.replaceState(history.state, '', '#' + encodeURIComponent(C.id) + '?l=' + encodeURIComponent(h.codigo)); } catch (e) {} }
+      const espera = setTimeout(() => { if (g === gen) cargando.hidden = false; }, 250);
+      if (listo) img.classList.add('cambia');
       try {
         // primero la copia liviana (media, 2400 px) para abrir rapido; la completa (hasta 8K) baja detras y la reemplaza sin saltos
-        const u = await urlImagen(c.media || c.imagen); if (g !== gen) { suelta(u); return; }
-        const im = await carga(u); if (g !== gen) { suelta(u); return; }
-        urls.push(u); mapaImg.src = u; img.src = u;
-        iw = c.ancho || im.naturalWidth; ih = c.alto || im.naturalHeight;
+        const u = await urlDe(h.media || h.imagen); if (g !== gen) return;
+        const im = await carga(u); if (g !== gen) return;
+        mapaImg.src = u; img.src = u;
+        iw = h.ancho || im.naturalWidth; ih = h.alto || im.naturalHeight;
         img.style.width = iw + 'px'; img.style.height = ih + 'px';
         medidas(); s = sMin; x = 0; y = 0; pinta();
-        listo = true; img.classList.add('lista'); caja.focus({preventScroll:true});
-        cargando.hidden = true;
-        if (c.media && c.imagen !== c.media) {
-          const uf = await urlImagen(c.imagen); if (g !== gen) { suelta(uf); return; }
-          await carga(uf); if (g !== gen) { suelta(uf); return; }
-          urls.push(uf); img.src = uf;
+        listo = true; img.classList.remove('cambia'); img.classList.add('lista'); caja.focus({preventScroll:true});
+        clearTimeout(espera); cargando.hidden = true;
+        if (hojas[k + 1]) urlDe(hojas[k + 1].media || hojas[k + 1].imagen).catch(() => {});     // deja lista la siguiente
+        if (h.media && h.imagen !== h.media) {
+          const uf = await urlDe(h.imagen); if (g !== gen) return;
+          await carga(uf); if (g !== gen) return;
+          img.src = uf;
         }
-      } catch (e) { if (g === gen && !listo) $('#eTitulo').textContent = 'No se pudo abrir la imagen. Revisa la conexión y vuelve a intentar.'; }
-      finally { if (g === gen) cargando.hidden = true; }
+      } catch (e) { if (g === gen) $('#eTitulo').textContent = 'No se pudo abrir ' + (varias ? 'esta lámina' : 'la imagen') + '. Revisa la conexión y vuelve a intentar.'; }
+      finally { clearTimeout(espera); if (g === gen) { cargando.hidden = true; img.classList.remove('cambia'); } }
     }
-    function cierra(){ gen++; listo = false; para(); pts.clear(); img.removeAttribute('src'); mapaImg.removeAttribute('src'); urls.forEach(suelta); urls = []; img.classList.remove('lista'); }
-    return {abre, cierra};
+    function cierra(){ gen++; listo = false; para(); pts.clear(); img.removeAttribute('src'); mapaImg.removeAttribute('src'); tira.innerHTML = ''; urls.forEach(suelta); urls = []; cache = new Map(); img.classList.remove('lista', 'cambia'); }
+    return {abre, cierra, irA};
   }
 
   // ================= VISOR =================
