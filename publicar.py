@@ -5,6 +5,8 @@ Uso:
     python publicar.py --subir         ademas hace commit y push (GitHub Pages se actualiza solo)
     python publicar.py --nueva-clave   cambia la contrasena: vuelve a cifrar todo con la nueva
     python publicar.py --ventana       pide la contrasena en una ventana de Windows (sin terminal)
+    python publicar.py --enlace        imprime el enlace con llave: entra sin escribir la contrasena
+                                       (deja de servir cuando cambias la contrasena con --nueva-clave)
 
 Que se publica:
   - sitio/index.html, iconos y manifiesto (la app, sin ningun dato del proyecto).
@@ -27,6 +29,7 @@ ACCESO = os.path.join(DATOS, "acceso.json")
 INDICE = "indice.bin"
 ITER = 400_000
 VENTANA = False
+URL = "https://pipeamortegui.github.io/recorridos-360/"
 APP = ["index.html", "manifest.webmanifest", "icono-180.png", "icono-192.png", "icono-512.png"]
 
 
@@ -104,9 +107,25 @@ def main():
     ap.add_argument("--subir", action="store_true", help="hacer commit y push al terminar")
     ap.add_argument("--nueva-clave", action="store_true", help="cambiar la contrasena y volver a cifrar todo")
     ap.add_argument("--ventana", action="store_true", help="pedir la contrasena en una ventana en vez de la terminal")
+    ap.add_argument("--enlace", action="store_true", help="imprimir el enlace con llave (entra sin contrasena)")
     a = ap.parse_args()
     global VENTANA
     VENTANA = a.ventana
+
+    if a.enlace:
+        if not os.path.exists(ACCESO):
+            sys.exit("Todavia no hay sitio cifrado: corre primero python publicar.py")
+        acceso = json.load(open(ACCESO, encoding="utf-8"))
+        pw = pide_clave(confirmar=False)
+        clave = hashlib.pbkdf2_hmac("sha256", pw.encode("utf-8"), base64.b64decode(acceso["sal"]), acceso["iter"], 32)
+        try:
+            descifra(clave, open(os.path.join(DATOS, INDICE), "rb").read())
+        except InvalidTag:
+            sys.exit("Esa no es la contrasena con la que esta publicado el sitio.")
+        # la llave va despues de #: el navegador no la envia a ningun servidor
+        print(URL + "#k=" + base64.urlsafe_b64encode(clave).decode().rstrip("="))
+        print("Quien tenga este enlace entra sin contrasena. Para anularlo: python publicar.py --nueva-clave --subir")
+        return
 
     catalogo_ruta = os.path.join(RECORRIDOS, "catalogo.json")
     if not os.path.exists(catalogo_ruta):

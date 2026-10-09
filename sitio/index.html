@@ -1546,6 +1546,15 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     if (acceso && acceso.sal) {
       cifrado = true;
       if (!(window.crypto && crypto.subtle)) { pideEntrada('Este navegador no puede descifrar los recorridos. Ábrelo con https en Safari o Chrome.'); bEntrar.disabled = true; return; }
+      // enlace con llave (#k=...): entra sin escribir la contrasena. Lo que va despues de # no sale del navegador;
+      // la llave se quita de la barra de direcciones y queda solo para esta pestana. Cambiar la contrasena lo invalida.
+      const enl = /(?:^#|&)k=([A-Za-z0-9_\-+\/=]+)/.exec(location.hash);
+      if (enl) {
+        let raw = enl[1].replace(/-/g, '+').replace(/_/g, '/'); while (raw.length % 4) raw += '=';
+        try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+        try { clave = await importaClave(raw); await abreIndice(); try { sessionStorage.setItem(GUARDA, raw); } catch (e) {} return; }
+        catch (e) { clave = null; pideEntrada('Este enlace ya no es válido. Pide uno nuevo o escribe la contraseña.'); return; }
+      }
       const g = leeGuardada();
       if (g) { try { clave = await importaClave(g); await abreIndice(); return; } catch (e) { clave = null; olvidaClave(); } }
       pideEntrada(); return;

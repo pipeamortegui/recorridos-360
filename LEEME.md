@@ -14,6 +14,14 @@ Enlace privado en Claude (sin contraseña, solo tu cuenta): https://claude.ai/ar
 - No hay registro de quién entra. Para quitarle el acceso a alguien, cambia la contraseña (`python publicar.py --nueva-clave --subir`).
 - Usa una frase larga (3 o 4 palabras). La seguridad depende de que no se pueda adivinar.
 
+## Compartir sin contraseña (enlace con llave)
+
+```
+python publicar.py --enlace
+```
+
+Pide la contraseña e imprime un enlace que termina en `#k=...`: quien lo abra entra directo, sin escribir nada. Lo que va después de `#` no sale del navegador (GitHub no lo ve) y la app lo quita de la barra de direcciones. Todo sigue cifrado en GitHub. Ojo: cualquiera que reciba el enlace puede entrar. Para anularlo, cambia la contraseña: `python publicar.py --nueva-clave --subir`.
+
 ## Carpetas
 
 - `web/`: la app y los recorridos **sin cifrar** (`web/recorridos/`). Se queda solo en tu equipo; está en `.gitignore`.
