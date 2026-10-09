@@ -343,7 +343,8 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   }
   const importaClave = raw => crypto.subtle.importKey('raw', b64aBytes(raw), {name:'AES-GCM'}, true, ['decrypt']);
   async function bajaCifrado(nombre){
-    const r = await fetch('datos/' + nombre); if (!r.ok) throw new Error('HTTP ' + r.status);
+    // el indice siempre se llama igual y cambia en cada publicacion: se pide sin cache; los demas .bin tienen nombre unico
+    const r = await fetch('datos/' + nombre, nombre === (acceso && acceso.indice) ? {cache:'no-cache'} : {}); if (!r.ok) throw new Error('HTTP ' + r.status);
     const b = await r.arrayBuffer();
     return crypto.subtle.decrypt({name:'AES-GCM', iv:new Uint8Array(b, 0, 12)}, clave, new Uint8Array(b, 12));
   }
