@@ -239,6 +239,51 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 }
 @media (max-height:520px) and (orientation:landscape) { #eMapa { width:min(170px, 28vw); } #ePista { display:none; } #explorador.con-tira { --tira:72px; } #eTira button img { width:58px; height:41px; } }
 @media (prefers-reduced-motion: reduce) { #eImg, #ePista { transition:none; } #eCargando { animation-duration:3s; } }
+
+/* ================= SECCIONES DE LA GALERIA ================= */
+#lista { display:grid; gap:40px; }
+.secciones { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+.secciones button { display:inline-flex; align-items:center; gap:7px; min-height:38px; padding:0 14px; border-radius:999px; border:1px solid var(--borde); background:transparent; color:var(--tenue); font-size:13.5px; font-weight:500; cursor:pointer; }
+.secciones button span { font-family:var(--mono); font-size:12px; opacity:.8; }
+.secciones button[aria-pressed="true"] { background:var(--acento); border-color:var(--acento); color:var(--acento-tinta); font-weight:600; }
+.secciones button:hover { border-color:var(--borde-fuerte); }
+.tarjeta.orbita .foto::after { content:"Órbita 360°"; font-family:var(--sans); }
+
+/* ================= ORBITA (fotogramas alrededor de la casa) ================= */
+#orbita { position:fixed; inset:0; background:#0f1114; --tira:0px; }
+#oLienzo { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:grab; }
+#oLienzo.arrastra { cursor:grabbing; }
+#orbita.limpio .ui { opacity:0; pointer-events:none !important; }
+#oInfo { position:absolute; left:var(--sl); bottom:calc(12px + var(--sb)); display:flex; align-items:center; gap:12px; padding:8px 14px 8px 8px; max-width:min(400px, calc(100vw - 32px - 70px)); }
+#oInfo svg { width:64px; height:64px; flex:0 0 auto; }
+#oInfo .txt { min-width:0; font-size:12.5px; line-height:1.4; color:var(--tenue); }
+#oInfo b { color:var(--acento); font-weight:600; }
+#oInfo .num { font-family:var(--mono); font-size:11.5px; }
+#oCarga { position:absolute; left:50%; top:calc(50% + 34px); transform:translateX(-50%); padding:8px 14px; font-size:12.5px; color:var(--tenue); border-radius:999px; text-align:center; }
+#oCarga .barra { width:180px; height:3px; margin:6px auto 0; border-radius:2px; background:rgba(236,231,223,.15); overflow:hidden; }
+#oCarga .barra i { display:block; height:100%; width:0; background:var(--acento); transition:width .2s ease; }
+#oCarga.chico { top:auto; bottom:calc(12px + var(--sb)); }
+#oVel { font:600 11.5px/1 var(--mono); }
+#oPista { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(14px + var(--sb)); padding:8px 14px; font-size:12.5px; color:var(--tenue); border-radius:999px; transition:opacity .4s ease; text-align:center; max-width:calc(100vw - 2 * 440px); }
+@media (max-width:1180px) { #oPista { display:none; } }
+#oPista.fuera { opacity:0; pointer-events:none; }
+#oFijas { position:absolute; inset:0; z-index:6; background:rgba(12,16,18,.96); overflow:auto; padding:calc(70px + var(--st)) var(--sr) calc(24px + var(--sb)) var(--sl); }
+#oFijas h2 { margin:0 0 14px; font-size:13px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--acento); }
+#oFijas .malla { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap:14px; }
+#oFijas figure { margin:0; border:1px solid var(--borde); border-radius:12px; overflow:hidden; background:var(--fondo-2); cursor:zoom-in; }
+#oFijas figure button { display:block; width:100%; padding:0; border:0; background:none; cursor:zoom-in; }
+#oFijas img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; background:#1a1f22; }
+#oFijas figcaption { padding:9px 12px; font-size:13px; color:var(--tenue); }
+#oCerrarFijas { position:absolute; right:var(--sr); top:calc(12px + var(--st)); }
+#oLuz { position:absolute; inset:0; z-index:7; background:rgba(0,0,0,.95); display:grid; place-items:center; cursor:zoom-out; }
+#oLuz img { max-width:96vw; max-height:92vh; }
+@media (max-width:640px) {
+  #orbita .herr { top:auto; bottom:calc(12px + var(--sb)); }
+  #oInfo { max-width:calc(100vw - 32px - 62px); padding:6px 10px 6px 6px; gap:8px; } #oInfo svg { width:50px; height:50px; } #oInfo .que { display:none; }
+  #oPista { display:none; }
+}
+@media (max-height:520px) and (orientation:landscape) { #oInfo svg { width:46px; height:46px; } #oInfo .que { display:none; } #oPista { display:none; } }
+@media (prefers-reduced-motion: reduce) { #oPista, #oCarga .barra i { transition:none; } }
 </style>
 
 <main id="entrada" hidden>
@@ -259,7 +304,8 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     <div class="fila"><div class="ceja">Concursos · panoramas</div>
       <button id="bSalir" class="salir" type="button" hidden title="Borra la contraseña de este equipo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Cerrar acceso</button></div>
     <h1>Recorridos <b>360</b></h1>
-    <p>Cada recorrido es un modelo de concurso visto desde varios puntos. Entra y arrastra para mirar alrededor; pellizca para acercar.</p>
+    <p>Los modelos de concurso en recorridos 360, órbitas, imágenes y planos. Entra y arrastra para mirar; pellizca para acercar.</p>
+    <nav class="secciones" id="secciones" aria-label="Secciones" hidden></nav>
   </header>
   <div id="lista"></div>
   <div id="consejo" class="consejo" hidden>
@@ -320,6 +366,40 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   <nav id="eTira" class="panel ui" aria-label="Láminas" hidden></nav>
 </section>
 
+<section id="orbita" hidden aria-label="Órbita 360">
+  <canvas id="oLienzo" tabindex="0" aria-label="Órbita alrededor de la casa: arrastra de lado para girarla"></canvas>
+  <div id="oCarga" class="panel" hidden><span id="oCargaTxt">Cargando fotogramas…</span><div class="barra"><i id="oBarra"></i></div></div>
+  <div class="arriba ui">
+    <div class="vcab">
+      <button id="oVolver" class="panel redondo" type="button" aria-label="Volver a la galería" title="Volver a la galería"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <header class="titulos panel"><div class="ceja" id="oCeja"></div><h1 id="oTitulo"></h1></header>
+    </div>
+  </div>
+  <div class="herr panel ui" role="toolbar" aria-label="Controles de la órbita">
+    <button id="oAuto" type="button" aria-pressed="false" aria-label="Girar solo"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4.5h-4.5"/></svg><span class="et">Girar solo</span></button>
+    <button id="oVel" type="button" aria-label="Velocidad del giro: 10 segundos por vuelta">10 s<span class="et">Velocidad del giro</span></button>
+    <button id="oInicial" type="button" aria-label="Volver al frente"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.6"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5"/></svg><span class="et">Volver al frente</span></button>
+    <button id="oVistas" type="button" aria-label="Vistas fijas"><svg class="ic" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="7" height="6" rx="1"/><rect x="13.5" y="4.5" width="7" height="6" rx="1"/><rect x="3.5" y="13.5" width="7" height="6" rx="1"/><rect x="13.5" y="13.5" width="7" height="6" rx="1"/></svg><span class="et">Vistas fijas</span></button>
+    <button id="oGiro" type="button" aria-pressed="false" aria-label="Giroscopio"><svg class="ic" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17.5h2"/><path d="M3.5 9a9 9 0 0 0 0 6M20.5 9a9 9 0 0 1 0 6"/></svg><span class="et">Giroscopio</span></button>
+    <button id="oLimpio" type="button" aria-label="Ocultar controles"><svg class="ic" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20L20 4"/></svg><span class="et">Ocultar controles</span></button>
+    <button id="oPantalla" type="button" aria-label="Pantalla completa"><svg class="ic" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="et">Pantalla completa</span></button>
+  </div>
+  <div id="oInfo" class="panel ui">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="46" fill="rgba(12,16,18,.6)" stroke="rgba(236,231,223,.18)"/>
+      <circle cx="50" cy="50" r="34" fill="none" stroke="rgba(236,231,223,.18)" stroke-dasharray="2 3"/>
+      <rect x="39" y="44" width="22" height="12" rx="1.5" fill="#5c6068"/><rect x="39" y="52" width="22" height="4" rx="1" fill="#8a7a5a"/>
+      <text x="50" y="13" fill="#a3aca9" font-size="9" text-anchor="middle">N</text><text x="50" y="94" fill="#d9b36c" font-size="9" text-anchor="middle">S</text>
+      <text x="91" y="53" fill="#a3aca9" font-size="9" text-anchor="middle">E</text><text x="9" y="53" fill="#a3aca9" font-size="9" text-anchor="middle">O</text>
+      <line id="oMirada" x1="50" y1="84" x2="50" y2="62" stroke="#d9b36c" stroke-width="1.5" stroke-linecap="round"/><circle id="oOjo" cx="50" cy="84" r="4.5" fill="#d9b36c"/>
+    </svg>
+    <div class="txt"><b id="oRumbo">Cámara al sur</b> <span class="num" id="oAng">· 0°</span><div class="que" id="oQue"></div></div>
+  </div>
+  <div id="oPista" class="panel ui"></div>
+  <div id="oFijas" hidden><h2>Vistas fijas</h2><div class="malla" id="oMalla"></div><button id="oCerrarFijas" class="panel redondo" type="button" aria-label="Cerrar las vistas fijas"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div id="oLuz" hidden><img id="oLuzImg" alt=""></div>
+</section>
+
 <script>
 (function(){
   'use strict';
@@ -366,6 +446,13 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   function tarjeta(c, destacada){
     const est = (c.estados || []).filter(Boolean);
     const h = '#' + encodeURIComponent(c.id), img = c.tipo === 'imagen', pl = c.tipo === 'planos';
+    if (c.tipo === 'orbita') return '<li' + (destacada ? ' style="grid-column:1/-1"' : '') + '><article class="tarjeta orbita' + (destacada ? ' destacada' : '') + '" data-id="' + esc(c.id) + '">' +
+      '<div class="foto" data-portada="' + esc(c.portada) + '" role="img" aria-label="Órbita de ' + esc(c.titulo) + '"></div>' +
+      '<div class="info"><div class="ceja">' + esc([c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Órbita') + '</div>' +
+      '<h3><a href="' + h + '">' + esc(c.titulo) + '</a></h3>' +
+      '<div class="meta"><span class="chip">Órbita 360°</span><span class="chip num">' + c.fotogramas + ' fotogramas</span>' + (c.fijas ? '<span class="chip num">' + c.fijas + (c.fijas === 1 ? ' vista fija' : ' vistas fijas') + '</span>' : '') +
+      (c.fecha ? '<span class="chip num">' + esc(fechaTxt(c.fecha)) + '</span>' : '') + '</div>' +
+      '<div class="acciones"><a class="con" href="' + h + '">Girar alrededor <svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></article></li>';
     if (pl) return '<li' + (destacada ? ' style="grid-column:1/-1"' : '') + '><article class="tarjeta planos' + (destacada ? ' destacada' : '') + '" data-id="' + esc(c.id) + '">' +
       '<div class="foto" data-portada="' + esc(c.portada) + '" role="img" aria-label="Planos de ' + esc(c.titulo) + '"></div>' +
       '<div class="info"><div class="ceja">' + esc([c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Planos') + '</div>' +
@@ -386,15 +473,27 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       (c.fecha ? '<span class="chip num">' + esc(fechaTxt(c.fecha)) + '</span>' : '') + '</div>' +
       '<div class="acciones">' + acciones + '</div></div></article></li>';
   }
+  // la galeria va por secciones, una por tipo; los botones de arriba muestran una sola o todas
+  const SECCIONES = [['360', 'Recorridos 360'], ['orbita', 'Órbitas'], ['imagen', 'Imágenes'], ['planos', 'Planos']];
+  const tipoDe = c => c.tipo || '360';
+  let seccion = 'todo';
+  try { seccion = localStorage.getItem('r360-seccion') || 'todo'; } catch (e) {}
   function pintaGaleria(){
-    if (!catalogo.length) { lista.innerHTML = '<div class="vacio">Todavía no hay recorridos. Importa un visor con <code>python importar_visor.py visor.html</code>.</div>'; return; }
-    const grupos = new Map();
-    catalogo.forEach(c => { const k = c.concurso || ''; if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(c); });
-    const conNombre = [...grupos.keys()].some(Boolean);
-    let h = '', primero = true;
-    grupos.forEach((items, k) => {
-      h += '<section class="grupo">' + (conNombre ? '<h2>' + esc(k || 'Otros') + ' <span>' + items.length + '</span></h2>' : '') + '<ul class="tarjetas">';
-      items.forEach(c => { h += tarjeta(c, primero); primero = false; });
+    const nav = $('#secciones');
+    if (!catalogo.length) { nav.hidden = true; lista.innerHTML = '<div class="vacio">Todavía no hay recorridos. Importa un visor con <code>python importar_visor.py visor.html</code>.</div>'; return; }
+    const hay = SECCIONES.map(([t, n]) => [t, n, catalogo.filter(c => tipoDe(c) === t)]).filter(x => x[2].length);
+    if (!hay.some(x => x[0] === seccion)) seccion = 'todo';
+    nav.hidden = hay.length < 2;
+    nav.innerHTML = '<button type="button" data-s="todo">Todo <span>' + catalogo.length + '</span></button>' +
+      hay.map(([t, n, it]) => '<button type="button" data-s="' + t + '">' + esc(n) + ' <span>' + it.length + '</span></button>').join('');
+    nav.querySelectorAll('button').forEach(b => {
+      b.setAttribute('aria-pressed', String(b.dataset.s === seccion));
+      b.addEventListener('click', () => { seccion = b.dataset.s; try { localStorage.setItem('r360-seccion', seccion); } catch (e) {} pintaGaleria(); });
+    });
+    let h = '';
+    hay.filter(x => seccion === 'todo' || x[0] === seccion).forEach(([t, n, items]) => {
+      h += '<section class="grupo">' + (hay.length > 1 ? '<h2>' + esc(n) + ' <span>' + items.length + '</span></h2>' : '') + '<ul class="tarjetas">';
+      items.forEach((c, i) => { h += tarjeta(c, i === 0); });
       h += '</ul></section>';
     });
     lista.innerHTML = h;
@@ -412,6 +511,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     const [id, op] = decodeURIComponent(location.hash.replace(/^#/, '')).split('?');
     const c = id && catalogo.find(x => x.id === id);
     if (c && (c.tipo === 'imagen' || c.tipo === 'planos')) abreImagen(c, op);
+    else if (c && c.tipo === 'orbita') abreOrbita(c);
     else if (c) { ponRotulos(op !== SIN_ROTULOS.slice(1)); abreVisor(c); } else muestraGaleria();
   }
   // #id abre con los rotulos de los espacios; #id?sin-rotulos, sin ellos (el boton Rotulos del visor alterna)
@@ -419,8 +519,8 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   function ponRotulos(si){ visorEl.classList.toggle('sin-rotulos', !si); $('#bRotulos').setAttribute('aria-pressed', String(si)); }
   function cierraAbierto(){
     if (!abierto) return;
-    V && V.cierra(); E && E.cierra(); abierto = null;
-    visorEl.hidden = true; exploradorEl.hidden = true;
+    V && V.cierra(); E && E.cierra(); O && O.cierra(); abierto = null;
+    visorEl.hidden = true; exploradorEl.hidden = true; orbitaEl.hidden = true;
   }
   function muestraGaleria(){
     cierraAbierto();
@@ -450,6 +550,229 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   window.addEventListener('hashchange', ruta);
   $('#bVolver').addEventListener('click', volver);
   $('#eVolver').addEventListener('click', volver);
+  $('#oVolver').addEventListener('click', volver);
+  function abreOrbita(c){
+    if (abierto === c.id) return;
+    cierraAbierto();
+    abierto = c.id; galeria.hidden = true; orbitaEl.hidden = false; document.body.classList.add('en-visor'); window.scrollTo(0, 0);
+    document.title = c.titulo;
+    if (!O) O = creaOrbita();
+    O.abre(c);
+  }
+
+  // ================= ORBITA: fotogramas alrededor de la casa =================
+  // giro = grados desde el frente (0 = camara al sur); el fotograma k cubre giro k * paso. z = zoom sobre el encaje; (cx, cy) = punto del fotograma al centro
+  const orbitaEl = $('#orbita');
+  let O = null;
+  function creaOrbita(){
+    const lienzo = $('#oLienzo'), ctx = lienzo.getContext('2d'), carga = $('#oCarga'), cargaTxt = $('#oCargaTxt'), barra = $('#oBarra'), pista = $('#oPista');
+    const tactil = !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
+    const reducido = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const VELS = [[18, '20 s'], [36, '10 s'], [72, '5 s']];
+    let C = null, D = null, N = 1, PASO = 3, FW = 1280, FH = 720, ZMAX = 2.5, imgs = [], urls = [], cargados = 0, gen = 0;
+    let giro = 0, z = 1, cx = 640, cy = 360, W = 1, H = 1, dpr = 1, listo = false, iVel = 1, bordesK = [];
+    let auto = false, tAuto = 0, vx = 0, tInercia = 0, inercia = false, pendiente = false;
+
+    function indice(){ const k = Math.round(giro / PASO); return ((k % N) + N) % N; }
+    function cercano(k){ for (let d = 0; d <= N / 2; d++) { if (imgs[(k + d) % N]) return (k + d) % N; if (imgs[(k - d + N) % N]) return (k - d + N) % N; } return -1; }
+    function escala(){ return Math.min(W / FW, H / FH) * z; }
+    function zInicial(){ const contiene = Math.min(W / FW, H / FH), cubre = Math.max(W / FW, H / FH); return Math.min(ZMAX, Math.max(1, Math.pow(cubre / contiene, 0.4))); }   // 1 en 16:9; en vertical acerca sin cortar la casa
+    function acota(){
+      z = Math.min(ZMAX, Math.max(1, z));
+      const s = escala(), hx = W / (2 * s), hy = H / (2 * s);
+      cx = (FW * s <= W + 0.5) ? FW / 2 : Math.min(Math.max(cx, hx), FW - hx);
+      cy = (FH * s <= H + 0.5) ? FH / 2 : Math.min(Math.max(cy, hy), FH - hy);
+    }
+    function tam(){
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = lienzo.clientWidth || 1; H = lienzo.clientHeight || 1;
+      lienzo.width = Math.round(W * dpr); lienzo.height = Math.round(H * dpr);
+      dibuja();
+    }
+    // fuera del fotograma: arriba y abajo el color medio de la fila de borde (cielo, agua); a los lados se estira la columna de borde
+    const mini = document.createElement('canvas'); mini.width = 1; mini.height = 2; const mctx = mini.getContext('2d', {willReadFrequently:true});
+    function bordes(k){
+      if (bordesK[k]) return bordesK[k];
+      try { mctx.drawImage(imgs[k], 0, 0, FW, 1, 0, 0, 1, 1); mctx.drawImage(imgs[k], 0, FH - 1, FW, 1, 0, 1, 1, 1); const d = mctx.getImageData(0, 0, 1, 2).data;
+            return (bordesK[k] = ['rgb(' + d[0] + ',' + d[1] + ',' + d[2] + ')', 'rgb(' + d[4] + ',' + d[5] + ',' + d[6] + ')']); }
+      catch (e) { return ['#0f1114', '#0f1114']; }
+    }
+    function dibuja(){
+      if (!listo) return;
+      const k = cercano(indice()); if (k < 0) return;
+      const im = imgs[k], s = escala(); acota();
+      const x = W / 2 - cx * s, y = H / 2 - cy * s, w = FW * s, h = FH * s;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+      ctx.fillStyle = '#0f1114'; ctx.fillRect(0, 0, W, H);
+      const b = bordes(k);
+      if (y > 0) { ctx.fillStyle = b[0]; ctx.fillRect(0, 0, W, y + 1); }
+      if (y + h < H) { ctx.fillStyle = b[1]; ctx.fillRect(0, y + h - 1, W, H - (y + h) + 1); }
+      if (x > 0) ctx.drawImage(im, 0, 0, 1, FH, 0, y, x + 1, h);
+      if (x + w < W) ctx.drawImage(im, FW - 1, 0, 1, FH, x + w - 1, y, W - (x + w) + 1, h);
+      ctx.drawImage(im, x, y, w, h);
+      hud();
+    }
+    function rumboDe(az){ let best = null, d0 = 1e9; (D.rumbos || []).forEach(r => { const d = Math.abs(((az - r[0]) % 360 + 540) % 360 - 180); if (d < d0) { d0 = d; best = r; } }); return best; }
+    function hud(){
+      const g = ((giro % 360) + 360) % 360, az = -90 + g, r = rumboDe(az);
+      $('#oRumbo').textContent = r ? 'Cámara al ' + r[1].toLowerCase() : 'Órbita';
+      $('#oAng').textContent = '· ' + Math.round(g) + '°' + (z > 1.05 ? ' · ' + z.toFixed(1).replace('.', ',') + '×' : '');
+      $('#oQue').textContent = r ? 'Se ve ' + r[2] : '';
+      const rad = az * Math.PI / 180, ex = 50 + 34 * Math.cos(rad), ey = 50 - 34 * Math.sin(rad), ojo = $('#oOjo'), mir = $('#oMirada');
+      ojo.setAttribute('cx', ex.toFixed(1)); ojo.setAttribute('cy', ey.toFixed(1));
+      mir.setAttribute('x1', ex.toFixed(1)); mir.setAttribute('y1', ey.toFixed(1)); mir.setAttribute('x2', (50 + 14 * Math.cos(rad)).toFixed(1)); mir.setAttribute('y2', (50 - 14 * Math.sin(rad)).toFixed(1));
+    }
+    new ResizeObserver(() => { if (!orbitaEl.hidden) tam(); }).observe(lienzo);
+
+    // ---- giro automatico e inercia: un solo bucle de animacion
+    function pide(){ if (!pendiente) { pendiente = true; requestAnimationFrame(paso); } }
+    function paso(t){
+      pendiente = false;
+      if (orbitaEl.hidden) return;
+      if (auto) { giro += VELS[iVel][0] * (t - tAuto) / 1000; tAuto = t; dibuja(); pide(); return; }
+      if (inercia) { const dt = t - tInercia; tInercia = t; giro -= vx * dt / W * 360; vx *= Math.pow(0.94, dt / 16.7); dibuja(); if (Math.abs(vx) < 0.02) inercia = false; else pide(); }
+    }
+    const bAuto = $('#oAuto');
+    function arranca(){ if (auto || !listo) return; inercia = false; auto = true; tAuto = performance.now(); bAuto.setAttribute('aria-pressed', 'true'); pide(); }
+    function para(){ auto = false; inercia = false; bAuto.setAttribute('aria-pressed', 'false'); }
+    function tocado(){ pista.classList.add('fuera'); }
+    bAuto.addEventListener('click', () => { tocado(); if (auto) para(); else arranca(); });
+    const bVel = $('#oVel');
+    function rotulaVel(){ bVel.firstChild.textContent = VELS[iVel][1]; bVel.setAttribute('aria-label', 'Velocidad del giro: ' + VELS[iVel][1].replace('s', 'segundos') + ' por vuelta'); }
+    bVel.addEventListener('click', () => { iVel = (iVel + 1) % VELS.length; rotulaVel(); arranca(); tAuto = performance.now(); });
+
+    // ---- arrastre de lado gira la casa; de arriba abajo desplaza si hay zoom; dos dedos acercan; un toque oculta los controles
+    const pts = new Map();
+    let arr = false, px = 0, py = 0, tPrev = 0, dist0 = 0, z0 = 1, movido = 0;
+    function puntoFotograma(mx, my){ const s = escala(); return [(mx - W / 2) / s + cx, (my - H / 2) / s + cy]; }
+    function zoomEn(mx, my, zN){ const p = puntoFotograma(mx, my); z = Math.min(ZMAX, Math.max(1, zN)); const s = escala(); cx = p[0] - (mx - W / 2) / s; cy = p[1] - (my - H / 2) / s; dibuja(); }
+    lienzo.addEventListener('contextmenu', e => e.preventDefault());
+    lienzo.addEventListener('pointerdown', e => {
+      if (!listo) return;
+      e.preventDefault(); para(); tocado();
+      try { lienzo.setPointerCapture(e.pointerId); } catch (err) {}
+      pts.set(e.pointerId, [e.clientX, e.clientY]);
+      if (pts.size === 1) movido = 0;
+      arr = true; px = e.clientX; py = e.clientY; vx = 0; tPrev = performance.now(); lienzo.classList.add('arrastra');
+      if (pts.size === 2) { const a = [...pts.values()]; dist0 = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); z0 = z; }
+    });
+    lienzo.addEventListener('pointermove', e => {
+      if (!pts.has(e.pointerId)) return;
+      pts.set(e.pointerId, [e.clientX, e.clientY]);
+      const r = lienzo.getBoundingClientRect();
+      if (pts.size === 2) { const a = [...pts.values()], d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); movido += 99; if (dist0 > 0) zoomEn((a[0][0] + a[1][0]) / 2 - r.left, (a[0][1] + a[1][1]) / 2 - r.top, z0 * d / dist0); return; }
+      if (!arr) return;
+      const dx = e.clientX - px, dy = e.clientY - py, t = performance.now(), s = escala();
+      movido += Math.abs(dx) + Math.abs(dy);
+      if ((e.buttons & 6) || e.shiftKey) { cx -= dx / s; cy -= dy / s; }
+      else { giro -= dx / W * 360; cy -= dy / s; const dt = Math.max(1, t - tPrev); vx = 0.6 * vx + 0.4 * (dx / dt); }
+      px = e.clientX; py = e.clientY; tPrev = t; dibuja();
+    });
+    function sueltaDedo(e){
+      if (!pts.has(e.pointerId)) return;
+      pts.delete(e.pointerId);
+      if (pts.size < 2) dist0 = 0;
+      if (pts.size === 0) {
+        arr = false; lienzo.classList.remove('arrastra');
+        if (movido < 8 && e.type === 'pointerup' && (tactil || orbitaEl.classList.contains('limpio'))) { orbitaEl.classList.toggle('limpio'); return; }
+        if (performance.now() - tPrev < 80 && Math.abs(vx) > 0.15 && !reducido) { inercia = true; tInercia = performance.now(); pide(); }
+      } else { const a = [...pts.values()][0]; px = a[0]; py = a[1]; }
+    }
+    lienzo.addEventListener('pointerup', sueltaDedo); lienzo.addEventListener('pointercancel', sueltaDedo);
+    lienzo.addEventListener('wheel', e => { if (!listo) return; e.preventDefault(); para(); tocado(); const r = lienzo.getBoundingClientRect(); zoomEn(e.clientX - r.left, e.clientY - r.top, z * (e.deltaY > 0 ? 1 / 1.1 : 1.1)); }, {passive:false});
+
+    // ---- teclado
+    const fijas = $('#oFijas'), luz = $('#oLuz');
+    document.addEventListener('keydown', e => {
+      if (orbitaEl.hidden) return;
+      const k = e.key;
+      if (k === 'Escape') { if (!luz.hidden) luz.hidden = true; else if (!fijas.hidden) fijas.hidden = true; else if (orbitaEl.classList.contains('limpio')) orbitaEl.classList.remove('limpio'); else volver(); return; }
+      if (!listo || !fijas.hidden) return;
+      if (k === 'ArrowLeft' || k === 'ArrowRight') { e.preventDefault(); para(); giro += (k === 'ArrowRight' ? 1 : -1) * (e.shiftKey ? 15 : PASO); giro = Math.round(giro / PASO) * PASO; dibuja(); }
+      else if (k === ' ') { e.preventDefault(); if (auto) para(); else arranca(); }
+      else if (k === '+' || k === '=') { para(); zoomEn(W / 2, H / 2, z * 1.15); }
+      else if (k === '-' || k === '_') { para(); zoomEn(W / 2, H / 2, z / 1.15); }
+      else if (k === 'r' || k === 'R') reinicia();
+      else return;
+      tocado();
+    });
+
+    // ---- botones
+    function reinicia(){ para(); giro = 0; z = zInicial(); cx = FW / 2; cy = FH / 2; dibuja(); }
+    $('#oInicial').addEventListener('click', () => { tocado(); reinicia(); });
+    $('#oLimpio').addEventListener('click', () => orbitaEl.classList.toggle('limpio'));
+    const bP = $('#oPantalla'), de = document.documentElement;
+    bP.hidden = !(!!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && !!(de.requestFullscreen || de.webkitRequestFullscreen));
+    bP.addEventListener('click', () => {
+      try {
+        if (!(document.fullscreenElement || document.webkitFullscreenElement)) { const r = de.requestFullscreen || de.webkitRequestFullscreen; const pr = r.call(de); if (pr && pr.catch) pr.catch(() => {}); }
+        else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      } catch (err) {}
+    });
+    $('#oVistas').addEventListener('click', () => { para(); fijas.hidden = false; $('#oCerrarFijas').focus(); });
+    $('#oCerrarFijas').addEventListener('click', () => { fijas.hidden = true; });
+    luz.addEventListener('click', () => { luz.hidden = true; });
+    // giroscopio: girar el telefono gira la casa (en iOS pide permiso)
+    const bG = $('#oGiro'); let giroOn = false, alfa0 = null, giro0 = 0;
+    function onOri(e){ if (!giroOn || e.alpha == null || orbitaEl.hidden) return; if (alfa0 === null) { alfa0 = e.alpha; giro0 = giro; return; } let d = e.alpha - alfa0; d = ((d + 540) % 360) - 180; giro = giro0 - d; dibuja(); }
+    function apagaGiro(){ window.removeEventListener('deviceorientation', onOri, true); giroOn = false; bG.setAttribute('aria-pressed', 'false'); }
+    bG.addEventListener('click', () => {
+      if (giroOn) { apagaGiro(); return; }
+      const enciende = () => { window.addEventListener('deviceorientation', onOri, true); giroOn = true; alfa0 = null; para(); bG.setAttribute('aria-pressed', 'true'); };
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') DeviceOrientationEvent.requestPermission().then(r => { if (r === 'granted') enciende(); }).catch(() => {});
+      else enciende();
+    });
+    bG.hidden = !('DeviceOrientationEvent' in window) || !tactil;
+
+    // ---- carga: primero unos fotogramas repartidos en la vuelta (se puede girar de inmediato) y luego los intermedios
+    function orden(n){ const o = [], visto = new Set(); for (let st = 1 << Math.floor(Math.log2(n)); st >= 1; st >>= 1) for (let i = 0; i < n; i += st) if (!visto.has(i)) { visto.add(i); o.push(i); } return o; }
+    const cargaImg = u => new Promise((ok, mal) => { const im = new Image(); im.onload = () => ok(im); im.onerror = mal; im.src = u; });
+    async function abre(c){
+      const g = ++gen; C = c; listo = false; para(); apagaGiro(); imgs = []; bordesK = []; cargados = 0;
+      orbitaEl.classList.remove('limpio'); fijas.hidden = true; luz.hidden = true;
+      $('#oCeja').textContent = [c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Órbita'; $('#oTitulo').textContent = c.titulo;
+      pista.textContent = tactil ? 'Desliza de lado para girar la casa · pellizca para acercar · un toque oculta los controles'
+                                 : 'Arrastra de lado para girar la casa · rueda para acercar · ← → paso a paso · espacio gira solo';
+      pista.classList.remove('fuera'); setTimeout(() => { if (g === gen) pista.classList.add('fuera'); }, 8000);
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#0f1114'; ctx.fillRect(0, 0, lienzo.width, lienzo.height);
+      carga.hidden = false; carga.classList.remove('chico'); cargaTxt.textContent = 'Cargando la órbita…'; barra.style.width = '0%';
+      const base = BASE + c.id + '/';
+      try { D = await leeJSON(base + 'orbita.json'); } catch (e) { if (g === gen) cargaTxt.textContent = 'No se pudo abrir la órbita. Revisa la conexión y vuelve a intentar.'; return; }
+      if (g !== gen) return;
+      N = D.fotogramas; PASO = 360 / N; FW = D.ancho; FH = D.alto; ZMAX = D.zmax || 2.5; giro = 0; cx = FW / 2; cy = FH / 2;
+      tam(); z = zInicial();
+      armaFijas(base);
+      const cola = orden(N); let sig = 0;
+      const unoMas = async () => {
+        while (sig < cola.length && g === gen) {
+          const k = cola[sig++];
+          try {
+            const u = await urlImagen(base + 'f' + String(k).padStart(3, '0') + '.jpg'); if (g !== gen) { suelta(u); return; }
+            urls.push(u); const im = await cargaImg(u); if (g !== gen) return;
+            imgs[k] = im; cargados++;
+            if (!listo) { listo = true; carga.classList.add('chico'); lienzo.focus({preventScroll:true}); }
+            barra.style.width = (100 * cargados / N).toFixed(1) + '%'; cargaTxt.textContent = 'Fotogramas ' + cargados + ' / ' + N;
+            if (cargados === 1 || cargados % 8 === 0 || cargados === N) dibuja();
+            if (cargados === N) { carga.hidden = true; if (!reducido && !giroOn && !pts.size) arranca(); }
+          } catch (e) { cargados++; }
+        }
+      };
+      for (let i = 0; i < 6; i++) unoMas();      // seis descargas a la vez
+    }
+    function armaFijas(base){
+      const malla = $('#oMalla'); malla.innerHTML = '';
+      $('#oVistas').hidden = !(D.fijas && D.fijas.length);
+      (D.fijas || []).forEach(f => {
+        const fig = document.createElement('figure'), b = document.createElement('button'), im = document.createElement('img'), cap = document.createElement('figcaption');
+        b.type = 'button'; b.setAttribute('aria-label', 'Ampliar: ' + f.titulo); im.alt = f.titulo; im.loading = 'lazy'; cap.textContent = f.titulo;
+        b.append(im); fig.append(b, cap); malla.append(fig);
+        urlImagen(f.imagen).then(u => { urls.push(u); im.src = u; }).catch(() => {});
+        b.addEventListener('click', () => { $('#oLuzImg').src = im.src; $('#oLuzImg').alt = f.titulo; luz.hidden = false; });
+      });
+    }
+    function cierra(){ gen++; listo = false; para(); apagaGiro(); pts.clear(); imgs = []; bordesK = []; urls.forEach(suelta); urls = []; $('#oMalla').innerHTML = ''; $('#oLuzImg').removeAttribute('src'); }
+    return {abre, cierra};
+  }
 
   // ================= EXPLORADOR DE IMAGEN =================
   // La imagen se mueve con una sola transformacion: pantalla = (x, y) + s * imagen. s = pixeles de pantalla por pixel de imagen.
@@ -536,7 +859,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
         vel = [0.8 * dx / dt + 0.2 * vel[0], 0.8 * dy / dt + 0.2 * vel[1]]; tPrev = now; pinta();
       }
     });
-    function suelta(e){
+    function sueltaDedo(e){
       if (!pts.has(e.pointerId)) return;
       const xy = pts.get(e.pointerId); pts.delete(e.pointerId);
       if (pts.size) { inicioGesto(); return; }
@@ -567,7 +890,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
         inercia = requestAnimationFrame(paso);
       }
     }
-    caja.addEventListener('pointerup', suelta); caja.addEventListener('pointercancel', suelta);
+    caja.addEventListener('pointerup', sueltaDedo); caja.addEventListener('pointercancel', sueltaDedo);
     caja.addEventListener('wheel', e => {
       if (!listo) return; e.preventDefault(); para(); tocado();
       const xy = local(e), d = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;
@@ -1037,7 +1360,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       yaw -= (e.clientX - px) * k; pitch -= (e.clientY - py) * k; pitch = Math.max(-pMax, Math.min(pMax, pitch));
       px = e.clientX; py = e.clientY; if (movido > 5) tocado(); pinta();
     });
-    function suelta(e){
+    function sueltaDedo(e){
       const clic = e.type === 'pointerup' && pts.size === 1 && movido < 8;
       pts.delete(e.pointerId); if (pts.size < 2) dist0 = 0;
       if (pts.size === 0) { arr = false; lienzo.classList.remove('arrastra'); } else { const a = [...pts.values()][0]; px = a[0]; py = a[1]; }
@@ -1047,7 +1370,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
         else if (tactil || visorEl.classList.contains('limpio')) alternaLimpio();     // un toque suelto muestra u oculta los controles
       }
     }
-    lienzo.addEventListener('pointerup', suelta); lienzo.addEventListener('pointercancel', suelta);
+    lienzo.addEventListener('pointerup', sueltaDedo); lienzo.addEventListener('pointercancel', sueltaDedo);
     function anilloEn(cx, cy){
       if (!listo) return null;
       const r = lienzo.getBoundingClientRect(), d = rayo(cx - r.left, cy - r.top); if (d[1] >= -0.03) return null;

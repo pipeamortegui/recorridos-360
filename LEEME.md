@@ -1,6 +1,6 @@
 # Recorridos 360
 
-App web para mostrar los 360 de concurso en iPad y iPhone: una galería de recorridos y un visor (arrastrar, pellizcar, anillos y rótulos para saltar, plano con cono de visión, giroscopio, notas, ocultar controles). También muestra imágenes planas (renders) y juegos de planos con un explorador: arrastrar, pellizcar, doble toque, mini-mapa y tira de láminas.
+App web para mostrar los 360 de concurso en iPad y iPhone: una galería de recorridos y un visor (arrastrar, pellizcar, anillos y rótulos para saltar, plano con cono de visión, giroscopio, notas, ocultar controles). También muestra órbitas 360 alrededor de la casa, imágenes planas (renders) y juegos de planos, cada tipo en su sección.
 
 URL pública, con contraseña: https://pipeamortegui.github.io/recorridos-360/
 
@@ -46,6 +46,19 @@ python publicar.py --subir
 ```
 
 El código de cada lámina sale del nombre del archivo (`G-03`, `T-04`, `F-01`...) y el resto del nombre es su título. `--nombre "G-03=Planta de la casa · 1:25"` cambia un título. Si el juego ya existe, las láminas nuevas se suman y las de un código repetido se reemplazan; el orden va por serie (G, A, T, I, F, D) y número. En la app: tira de miniaturas abajo, deslizar de lado (o flechas ← →) con la lámina completa para pasar a la siguiente, y cada lámina tiene su enlace (`#PRY-0005_planos?l=G-03`). Mejor exportarlas grandes (PNG o JPG de 4000 a 8000 px) para leer los textos al acercar.
+
+## Agregar una órbita 360 (fotogramas alrededor de la casa)
+
+```
+python importar_orbita.py "C:\Users\obeda\Downloads\FACHADA-A-ORBITA-360_visor.html" --id PRY-0005_orbita_fachada_A --titulo "Nhà Nước · órbita · fachada del perímetro A"
+python publicar.py --subir
+```
+
+Saca los fotogramas, las vistas fijas y los rumbos del visor. En la app: arrastrar de lado gira la casa, pellizcar acerca, girar solo (20, 10 o 5 s por vuelta), giroscopio, brújula y vistas fijas. Primero baja unos fotogramas repartidos en la vuelta para poder girar de inmediato y luego rellena los demás.
+
+## Secciones de la galería
+
+La galería se ordena en Recorridos 360, Órbitas, Imágenes y Planos; los botones de arriba muestran una sola sección o todas.
 
 ## Probar en local
 
