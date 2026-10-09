@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Recorridos 360">
 <meta name="theme-color" content="#0c1012">
 <meta name="format-detection" content="telephone=no">
-<title>Recorridos 360</title>
+<title>Muestra Piloto Jorge Marin</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icono-180.png">
 <link rel="icon" type="image/png" href="icono-192.png">
@@ -290,7 +290,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 <main id="entrada" hidden>
   <form id="fEntrada" autocomplete="on">
     <div class="sello"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></div>
-    <div><div class="ceja">Recorridos 360</div><h1>Acceso privado</h1></div>
+    <div><div class="ceja">Muestra Piloto Jorge Marin</div><h1>Acceso privado</h1></div>
     <p>Escribe la contraseña para ver los recorridos.</p>
     <input type="text" name="username" value="Recorridos 360" autocomplete="username" hidden>
     <label class="campo" for="clave">Contraseña<input id="clave" name="password" type="password" autocomplete="current-password" required></label>
@@ -302,10 +302,10 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 
 <main id="galeria" hidden>
   <header class="g-cab">
-    <div class="fila"><div class="ceja">Concursos · panoramas</div>
+    <div class="fila"><div class="ceja">Recorridos 360 · concursos</div>
       <button id="bSalir" class="salir" type="button" hidden title="Borra la contraseña de este equipo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Cerrar acceso</button></div>
-    <h1>Recorridos <b>360</b></h1>
-    <p>Los modelos de concurso en recorridos 360, órbitas, imágenes y planos. Entra y arrastra para mirar; pellizca para acercar.</p>
+    <h1>Muestra Piloto <b>Jorge Marin</b></h1>
+    <p>Los modelos de concurso en recorridos 360, órbitas, imágenes, planos y diseños técnicos. Entra y arrastra para mirar; pellizca para acercar.</p>
     <nav class="secciones" id="secciones" aria-label="Secciones" hidden></nav>
   </header>
   <div id="lista"></div>
@@ -526,7 +526,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   function muestraGaleria(){
     cierraAbierto();
     visorEl.hidden = true; galeria.hidden = false; document.body.classList.remove('en-visor');
-    document.title = 'Recorridos 360';
+    document.title = 'Muestra Piloto Jorge Marin';
   }
   async function abreVisor(c){
     if (abierto === c.id) return;
