@@ -1,6 +1,6 @@
 # Recorridos 360
 
-App web para mostrar los 360 de concurso en iPad y iPhone: una galería de recorridos y un visor (arrastrar, pellizcar, anillos y rótulos para saltar, plano con cono de visión, giroscopio, notas, ocultar controles).
+App web para mostrar los 360 de concurso en iPad y iPhone: una galería de recorridos y un visor (arrastrar, pellizcar, anillos y rótulos para saltar, plano con cono de visión, giroscopio, notas, ocultar controles). También muestra imágenes planas (renders) con un explorador: arrastrar, pellizcar, doble toque y mini-mapa.
 
 URL pública, con contraseña: https://pipeamortegui.github.io/recorridos-360/
 
@@ -28,6 +28,15 @@ python publicar.py --subir
 ```
 
 `publicar.py` pide la contraseña, cifra solo lo nuevo, hace commit y push. La página se actualiza en uno o dos minutos.
+
+## Agregar una imagen (render plano) para explorarla
+
+```
+python importar_imagen.py "C:\Users\obeda\Downloads\render_8k.jpg" --titulo "Nhà Nước · vista exterior" --proyecto PRY-0005
+python publicar.py --subir
+```
+
+En la galería sale con el botón **Explorar la imagen**: se arrastra para recorrerla, se pellizca (o rueda del ratón) para acercar, doble toque para acercar donde tocaste, y el mini-mapa de la esquina lleva a cualquier zona. Acepta imágenes de hasta 8K (8192 px de lado largo; `--max` cambia el tope). La app abre primero una copia liviana de 2400 px y cambia a la completa cuando termina de bajar.
 
 ## Probar en local
 

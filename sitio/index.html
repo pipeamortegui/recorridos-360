@@ -105,24 +105,24 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 #visor.limpio #marcas { opacity:0; }
 #visor.sin-rotulos .ficha { display:none; }      /* version sin rotulos de los espacios: quedan los anillos y los circulos amarillos */
 
-#arriba { position:absolute; left:var(--sl); top:calc(12px + var(--st)); display:grid; gap:8px; justify-items:start; max-width:min(520px, calc(100vw - 32px - 64px)); }
-#vcab { display:flex; align-items:stretch; gap:8px; max-width:100%; }
+.arriba { position:absolute; left:var(--sl); top:calc(12px + var(--st)); display:grid; gap:8px; justify-items:start; max-width:min(520px, calc(100vw - 32px - 64px)); }
+.vcab { display:flex; align-items:stretch; gap:8px; max-width:100%; }
 .redondo { flex:0 0 auto; width:46px; height:46px; display:grid; place-items:center; padding:0; border-radius:12px; cursor:pointer; }
-#titulos { padding:8px 13px 9px; display:grid; gap:2px; min-width:0; }
-#titulos .ceja { font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#titulos h1 { margin:0; font-size:18px; line-height:1.2; font-weight:600; text-wrap:balance; }
-#titulos p { margin:2px 0 0; font-size:12.5px; line-height:1.4; color:var(--tenue); }
+.titulos { padding:8px 13px 9px; display:grid; gap:2px; min-width:0; }
+.titulos .ceja { font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.titulos h1 { margin:0; font-size:18px; line-height:1.2; font-weight:600; text-wrap:balance; }
+.titulos p { margin:2px 0 0; font-size:12.5px; line-height:1.4; color:var(--tenue); }
 #momento { display:flex; padding:4px; gap:2px; border-radius:999px; flex-wrap:wrap; }
 #momento button { font-size:12.5px; font-weight:500; color:var(--tenue); background:transparent; border:0; border-radius:999px; padding:8px 14px; cursor:pointer; }
 #momento button.on { background:var(--acento); color:var(--acento-tinta); font-weight:600; }
 #momento button:disabled { opacity:.4; cursor:not-allowed; }
 
-#herr { position:absolute; right:var(--sr); top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:6px; padding:6px; border-radius:14px; }
-#herr button { position:relative; width:44px; height:44px; display:grid; place-items:center; padding:0; border:1px solid transparent; border-radius:10px; background:transparent; color:var(--texto); cursor:pointer; }
-#herr button:hover { background:rgba(236,231,223,.08); }
-#herr button[aria-pressed="true"] { color:var(--acento); border-color:rgba(217,179,108,.5); background:rgba(217,179,108,.12); }
-#herr button .et { position:absolute; right:calc(100% + 10px); top:50%; transform:translateY(-50%); white-space:nowrap; font-size:12.5px; padding:5px 9px; border-radius:7px; background:var(--panel-solido); border:1px solid var(--borde); opacity:0; pointer-events:none; transition:opacity .15s ease; }
-@media (hover:hover) { #herr button:hover .et, #herr button:focus-visible .et { opacity:1; } }
+.herr { position:absolute; right:var(--sr); top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:6px; padding:6px; border-radius:14px; }
+.herr button { position:relative; width:44px; height:44px; display:grid; place-items:center; padding:0; border:1px solid transparent; border-radius:10px; background:transparent; color:var(--texto); cursor:pointer; }
+.herr button:hover { background:rgba(236,231,223,.08); }
+.herr button[aria-pressed="true"] { color:var(--acento); border-color:rgba(217,179,108,.5); background:rgba(217,179,108,.12); }
+.herr button .et { position:absolute; right:calc(100% + 10px); top:50%; transform:translateY(-50%); white-space:nowrap; font-size:12.5px; padding:5px 9px; border-radius:7px; background:var(--panel-solido); border:1px solid var(--borde); opacity:0; pointer-events:none; transition:opacity .15s ease; }
+@media (hover:hover) { .herr button:hover .et, .herr button:focus-visible .et { opacity:1; } }
 
 #puntos { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(12px + var(--sb)); display:flex; gap:8px; padding:7px; max-width:calc(100vw - 32px); overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
 #puntos::-webkit-scrollbar { display:none; }
@@ -181,9 +181,9 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 
 /* iPhone vertical y pantallas angostas */
 @media (max-width:640px) {
-  #arriba { max-width:calc(100vw - 32px); }
-  #titulos h1 { font-size:16px; } #titulos p { display:none; }
-  #herr { top:auto; bottom:calc(var(--tira) + 24px + var(--sb)); transform:none; gap:2px; padding:4px; }
+  .arriba { max-width:calc(100vw - 32px); }
+  .titulos h1 { font-size:16px; } .titulos p { display:none; }
+  .herr { top:auto; bottom:calc(var(--tira) + 24px + var(--sb)); transform:none; gap:2px; padding:4px; }
   #puntos { left:12px; right:12px; transform:none; max-width:none; bottom:calc(8px + var(--sb)); }
   #puntos button img { width:76px; height:38px; } #puntos button span { max-width:76px; font-size:11px; }
   #plano { width:min(250px, calc(100vw - 32px - 64px)); padding:7px 7px 5px; } #plano .pie { display:none; }
@@ -192,12 +192,12 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
 }
 /* iPhone horizontal: poca altura, controles en una fila arriba a la derecha */
 @media (max-height:520px) and (orientation:landscape) {
-  #arriba { top:calc(8px + var(--st)); max-width:min(46vw, 420px); }
-  #titulos { padding:6px 11px 7px; } #titulos h1 { font-size:15px; } #titulos p { display:none; }
+  .arriba { top:calc(8px + var(--st)); max-width:min(46vw, 420px); }
+  .titulos { padding:6px 11px 7px; } .titulos h1 { font-size:15px; } .titulos p { display:none; }
   .redondo { width:42px; height:42px; }
-  #herr { top:calc(8px + var(--st)); bottom:auto; transform:none; flex-direction:row; gap:2px; padding:3px; }
-  #herr button { width:40px; height:40px; }
-  #herr button .et { right:auto; left:50%; top:calc(100% + 8px); transform:translateX(-50%); }
+  .herr { top:calc(8px + var(--st)); bottom:auto; transform:none; flex-direction:row; gap:2px; padding:3px; }
+  .herr button { width:40px; height:40px; }
+  .herr button .et { right:auto; left:50%; top:calc(100% + 8px); transform:translateX(-50%); }
   #puntos { bottom:calc(6px + var(--sb)); padding:5px; gap:6px; }
   #puntos button img { width:64px; height:32px; } #puntos button span { font-size:10.5px; max-width:64px; }
   #plano { width:min(220px, 30vw, calc((100vh - var(--tira) - 150px) * 0.9)); padding:6px; bottom:calc(var(--tira) + 14px + var(--sb)); } #plano svg { max-height:none; } #plano .pie { display:none; }
@@ -205,6 +205,30 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   #pista { display:none; }
 }
 @media (prefers-reduced-motion: reduce) { #lienzo, #marcas, #pista, .ui, .tarjeta { transition:none; } #cargando { animation-duration:3s; } .boton-mueble .disco { animation:none; } }
+
+/* ================= EXPLORADOR DE IMAGEN (renders planos: arrastrar, pellizcar, doble toque, mini-mapa) ================= */
+.tarjeta.imagen .foto::after { content:"Imagen"; font-family:var(--sans); }
+#explorador { position:fixed; inset:0; background:#000; --tira:0px; }
+#eLienzo { position:absolute; inset:0; overflow:hidden; touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none; }
+#eLienzo.arrastra { cursor:grabbing; }
+#eImg { position:absolute; left:0; top:0; transform-origin:0 0; max-width:none; will-change:transform; -webkit-user-drag:none; pointer-events:none; opacity:0; transition:opacity .3s ease; }
+#eImg.lista { opacity:1; }
+#eCargando { position:absolute; left:50%; top:50%; width:34px; height:34px; margin:-17px 0 0 -17px; border-radius:50%; border:2px solid var(--borde); border-top-color:var(--acento); animation:gira 0.9s linear infinite; pointer-events:none; }
+#explorador.limpio .ui { opacity:0; pointer-events:none !important; }
+#eMapa { position:absolute; left:var(--sl); bottom:calc(12px + var(--sb)); width:min(220px, 34vw); padding:5px; border-radius:10px; cursor:pointer; touch-action:none; }
+#eMapa img { display:block; width:100%; height:auto; border-radius:6px; opacity:.85; pointer-events:none; }
+#eMarco { position:absolute; border:1.5px solid var(--acento); border-radius:2px; box-shadow:0 0 0 999px rgba(12,16,18,.45); pointer-events:none; }
+#eMapaCaja { position:relative; overflow:hidden; border-radius:6px; }
+#eZoom { position:absolute; right:6px; bottom:6px; font:500 11px/1 var(--mono); padding:4px 6px; border-radius:6px; background:rgba(12,16,18,.75); color:var(--texto); pointer-events:none; }
+#ePista { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(14px + var(--sb)); padding:8px 14px; font-size:12.5px; color:var(--tenue); border-radius:999px; transition:opacity .4s ease; text-align:center; max-width:calc(100vw - 2 * 240px); }
+#ePista.fuera { opacity:0; pointer-events:none; }
+@media (max-width:640px) {
+  #explorador .herr { top:auto; bottom:calc(12px + var(--sb)); }
+  #eMapa { width:min(150px, 40vw); }
+  #ePista { display:none; }
+}
+@media (max-height:520px) and (orientation:landscape) { #eMapa { width:min(170px, 28vw); } #ePista { display:none; } }
+@media (prefers-reduced-motion: reduce) { #eImg, #ePista { transition:none; } #eCargando { animation-duration:3s; } }
 </style>
 
 <main id="entrada" hidden>
@@ -239,15 +263,15 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   <div id="marcas"></div>
   <div id="cargando" hidden></div>
 
-  <div id="arriba" class="ui">
-    <div id="vcab">
+  <div id="arriba" class="arriba ui">
+    <div id="vcab" class="vcab">
       <button id="bVolver" class="panel redondo" type="button" aria-label="Volver a los recorridos" title="Volver a los recorridos"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <header id="titulos" class="panel"><div class="ceja" id="vCeja"></div><h1 id="vTitulo"></h1><p id="vTexto"></p><div id="estadoMueble" hidden></div></header>
+      <header id="titulos" class="titulos panel"><div class="ceja" id="vCeja"></div><h1 id="vTitulo"></h1><p id="vTexto"></p><div id="estadoMueble" hidden></div></header>
     </div>
     <div id="momento" class="panel" role="group" aria-label="Estado de la escena" hidden></div>
   </div>
 
-  <div id="herr" class="panel ui" role="toolbar" aria-label="Controles">
+  <div id="herr" class="herr panel ui" role="toolbar" aria-label="Controles">
     <button id="bAuto" type="button" aria-pressed="true" aria-label="Girar solo"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4.5h-4.5"/></svg><span class="et">Girar solo</span></button>
     <button id="bPlano" type="button" aria-pressed="true" aria-label="Plano"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg><span class="et">Plano</span></button>
     <button id="bGiro" type="button" aria-pressed="false" aria-label="Giroscopio"><svg class="ic" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17.5h2"/><path d="M3.5 9a9 9 0 0 0 0 6M20.5 9a9 9 0 0 1 0 6"/></svg><span class="et">Mover el equipo para mirar</span></button>
@@ -263,6 +287,26 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   <div id="pista" class="panel ui"></div>
   <nav id="puntos" class="panel ui" aria-label="Puntos del recorrido"></nav>
   <div id="aviso" class="panel" hidden></div>
+</section>
+
+<section id="explorador" hidden aria-label="Explorador de imagen">
+  <div id="eLienzo" role="img" aria-label="Imagen: arrastra para recorrerla, pellizca o toca dos veces para acercar" tabindex="0"><img id="eImg" alt="" draggable="false"></div>
+  <div id="eCargando" hidden></div>
+  <div class="arriba ui">
+    <div class="vcab">
+      <button id="eVolver" class="panel redondo" type="button" aria-label="Volver a la galería" title="Volver a la galería"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <header class="titulos panel"><div class="ceja" id="eCeja"></div><h1 id="eTitulo"></h1><p id="eTexto" hidden></p></header>
+    </div>
+  </div>
+  <div class="herr panel ui" role="toolbar" aria-label="Controles de la imagen">
+    <button id="eMas" type="button" aria-label="Acercar"><svg class="ic" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M10.5 7.5v6M7.5 10.5h6"/></svg><span class="et">Acercar</span></button>
+    <button id="eMenos" type="button" aria-label="Alejar"><svg class="ic" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M7.5 10.5h6"/></svg><span class="et">Alejar</span></button>
+    <button id="eEntera" type="button" aria-label="Ver la imagen completa"><svg class="ic" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="1.5"/><path d="M7 9.5V8.5h2M17 9.5V8.5h-2M7 14.5v1h2M17 14.5v1h-2"/></svg><span class="et">Ver completa</span></button>
+    <button id="eLimpio" type="button" aria-label="Ocultar controles"><svg class="ic" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20L20 4"/></svg><span class="et">Ocultar controles</span></button>
+    <button id="ePantalla" type="button" aria-label="Pantalla completa"><svg class="ic" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="et">Pantalla completa</span></button>
+  </div>
+  <div id="eMapa" class="panel ui" role="button" tabindex="-1" aria-label="Mini-mapa: toca para ir a esa zona"><div id="eMapaCaja"><img id="eMapaImg" alt=""><div id="eMarco"></div><div id="eZoom">1×</div></div></div>
+  <div id="ePista" class="panel ui"></div>
 </section>
 
 <script>
@@ -309,15 +353,19 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   // ================= GALERIA =================
   function tarjeta(c, destacada){
     const est = (c.estados || []).filter(Boolean);
-    const h = '#' + encodeURIComponent(c.id);
-    return '<li' + (destacada ? ' style="grid-column:1/-1"' : '') + '><article class="tarjeta' + (destacada ? ' destacada' : '') + '" data-id="' + esc(c.id) + '">' +
+    const h = '#' + encodeURIComponent(c.id), img = c.tipo === 'imagen';
+    const chips = img ? '<span class="chip">Imagen</span>' + (c.ancho ? '<span class="chip num">' + c.ancho + ' × ' + c.alto + ' px</span>' : '')
+                      : '<span class="chip num">' + c.puntos + ' puntos</span>' + (est.length > 2 ? '<span class="chip">' + est.length + ' estados</span>' : est.map(e => '<span class="chip">' + esc(e) + '</span>').join(''));
+    const acciones = img ? '<a class="con" href="' + h + '">Explorar la imagen <svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>'
+                         : '<a class="con" href="' + h + '">Con rótulos <svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>' +
+                           '<a class="sin" href="' + h + SIN_ROTULOS + '">Sin rótulos</a>';
+    return '<li' + (destacada ? ' style="grid-column:1/-1"' : '') + '><article class="tarjeta' + (destacada ? ' destacada' : '') + (img ? ' imagen' : '') + '" data-id="' + esc(c.id) + '">' +
       '<div class="foto" data-portada="' + esc(c.portada) + '" role="img" aria-label="Vista de ' + esc(c.titulo) + '"></div>' +
       '<div class="info"><div class="ceja">' + esc([c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Recorrido') + '</div>' +
       '<h3><a href="' + h + '">' + esc(c.titulo) + '</a></h3>' +
-      '<div class="meta"><span class="chip num">' + c.puntos + ' puntos</span>' + (est.length > 2 ? '<span class="chip">' + est.length + ' estados</span>' : est.map(e => '<span class="chip">' + esc(e) + '</span>').join('')) +
+      '<div class="meta">' + chips +
       (c.fecha ? '<span class="chip num">' + esc(fechaTxt(c.fecha)) + '</span>' : '') + '</div>' +
-      '<div class="acciones"><a class="con" href="' + h + '">Con rótulos <svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>' +
-      '<a class="sin" href="' + h + SIN_ROTULOS + '">Sin rótulos</a></div></div></article></li>';
+      '<div class="acciones">' + acciones + '</div></div></article></li>';
   }
   function pintaGaleria(){
     if (!catalogo.length) { lista.innerHTML = '<div class="vacio">Todavía no hay recorridos. Importa un visor con <code>python importar_visor.py visor.html</code>.</div>'; return; }
@@ -344,18 +392,25 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     if (cifrado && !clave) return;
     const [id, op] = decodeURIComponent(location.hash.replace(/^#/, '')).split('?');
     const c = id && catalogo.find(x => x.id === id);
-    if (c) { ponRotulos(op !== SIN_ROTULOS.slice(1)); abreVisor(c); } else muestraGaleria();
+    if (c && c.tipo === 'imagen') abreImagen(c);
+    else if (c) { ponRotulos(op !== SIN_ROTULOS.slice(1)); abreVisor(c); } else muestraGaleria();
   }
   // #id abre con los rotulos de los espacios; #id?sin-rotulos, sin ellos (el boton Rotulos del visor alterna)
   const SIN_ROTULOS = '?sin-rotulos';
   function ponRotulos(si){ visorEl.classList.toggle('sin-rotulos', !si); $('#bRotulos').setAttribute('aria-pressed', String(si)); }
+  function cierraAbierto(){
+    if (!abierto) return;
+    V && V.cierra(); E && E.cierra(); abierto = null;
+    visorEl.hidden = true; exploradorEl.hidden = true;
+  }
   function muestraGaleria(){
-    if (abierto) { V && V.cierra(); abierto = null; }
+    cierraAbierto();
     visorEl.hidden = true; galeria.hidden = false; document.body.classList.remove('en-visor');
     document.title = 'Recorridos 360';
   }
   async function abreVisor(c){
     if (abierto === c.id) return;
+    cierraAbierto();
     abierto = c.id; galeria.hidden = true; visorEl.hidden = false; document.body.classList.add('en-visor'); window.scrollTo(0, 0);
     document.title = c.titulo + ' · 360';
     if (!V) V = creaVisor();
@@ -363,8 +418,213 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     catch (e) { V.avisa('No se pudo abrir este recorrido. Revisa la conexión y vuelve a intentar.'); }
   }
   function volver(){ if (vinoDeGaleria && history.length > 1) history.back(); else location.hash = ''; vinoDeGaleria = false; }
+  function abreImagen(c){
+    if (abierto === c.id) return;
+    cierraAbierto();
+    abierto = c.id; galeria.hidden = true; exploradorEl.hidden = false; document.body.classList.add('en-visor'); window.scrollTo(0, 0);
+    document.title = c.titulo;
+    if (!E) E = creaExplorador();
+    E.abre(c);
+  }
   window.addEventListener('hashchange', ruta);
   $('#bVolver').addEventListener('click', volver);
+  $('#eVolver').addEventListener('click', volver);
+
+  // ================= EXPLORADOR DE IMAGEN =================
+  // La imagen se mueve con una sola transformacion: pantalla = (x, y) + s * imagen. s = pixeles de pantalla por pixel de imagen.
+  const exploradorEl = $('#explorador');
+  let E = null;
+  function creaExplorador(){
+    const caja = $('#eLienzo'), img = $('#eImg'), mapa = $('#eMapa'), mapaImg = $('#eMapaImg'), marco = $('#eMarco'), zoomTxt = $('#eZoom'), pista = $('#ePista'), cargando = $('#eCargando');
+    const tactil = !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
+    const reducido = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    let iw = 1, ih = 1, W = 1, H = 1, s = 1, x = 0, y = 0, sMin = 1, sMax = 4, urls = [], gen = 0, listo = false, anim = 0, inercia = 0;
+
+    function medidas(){ W = caja.clientWidth || 1; H = caja.clientHeight || 1; sMin = Math.min(W / iw, H / ih); sMax = Math.max(sMin * 6, Math.max(W / iw, H / ih) * 3); }
+    function limita(){
+      s = Math.min(sMax, Math.max(sMin, s));
+      const w = iw * s, h = ih * s;
+      x = w <= W ? (W - w) / 2 : Math.min(0, Math.max(W - w, x));
+      y = h <= H ? (H - h) / 2 : Math.min(0, Math.max(H - h, y));
+    }
+    function pinta(){
+      limita();
+      img.style.transform = 'translate3d(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px,0) scale(' + s.toFixed(5) + ')';
+      const l = Math.max(0, -x / s / iw), t = Math.max(0, -y / s / ih), r = Math.min(1, (W - x) / s / iw), b = Math.min(1, (H - y) / s / ih);
+      marco.style.left = (l * 100) + '%'; marco.style.top = (t * 100) + '%'; marco.style.width = ((r - l) * 100) + '%'; marco.style.height = ((b - t) * 100) + '%';
+      const z = s / sMin; zoomTxt.textContent = (z < 9.95 ? z.toFixed(1).replace('.', ',') : Math.round(z)) + '×';
+      $('#eMenos').disabled = s <= sMin * 1.001; $('#eMas').disabled = s >= sMax * 0.999;
+    }
+    function para(){ cancelAnimationFrame(anim); cancelAnimationFrame(inercia); anim = inercia = 0; }
+    function zoomEn(sN, cx, cy){ const k = Math.min(sMax, Math.max(sMin, sN)) / s; x = cx - (cx - x) * k; y = cy - (cy - y) * k; s *= k; pinta(); }
+    // anima hacia una escala dejando el punto (cx, cy) de la pantalla fijo; o hacia la vista completa
+    function animaA(sN, cx, cy, ms){
+      para(); sN = Math.min(sMax, Math.max(sMin, sN));
+      const s0 = s, x0 = x, y0 = y, k = sN / s0;
+      let x1 = cx - (cx - x0) * k, y1 = cy - (cy - y0) * k;
+      const s1 = s; s = sN; x = x1; y = y1; limita(); x1 = x; y1 = y; s = s1; x = x0; y = y0;
+      if (reducido || !ms) { s = sN; x = x1; y = y1; pinta(); return; }
+      const t0 = performance.now();
+      const paso = now => {
+        const u = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - u, 3);
+        s = s0 * Math.pow(sN / s0, e); x = x0 + (x1 - x0) * e; y = y0 + (y1 - y0) * e; pinta();
+        if (u < 1) anim = requestAnimationFrame(paso);
+      };
+      anim = requestAnimationFrame(paso);
+    }
+    const entera = ms => animaA(sMin, W / 2, H / 2, ms);
+    function centraEn(fx, fy, ms){      // lleva el punto (fx, fy) de la imagen, en fraccion, al centro de la pantalla
+      para(); const xa = x, ya = y; x = W / 2 - fx * iw * s; y = H / 2 - fy * ih * s; limita();
+      const x1 = x, y1 = y; x = xa; y = ya;
+      if (reducido || !ms) { x = x1; y = y1; pinta(); return; }
+      const t0 = performance.now(), x0 = xa, y0 = ya;
+      const paso = now => { const u = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - u, 3); x = x0 + (x1 - x0) * e; y = y0 + (y1 - y0) * e; pinta(); if (u < 1) anim = requestAnimationFrame(paso); };
+      anim = requestAnimationFrame(paso);
+    }
+    function tocado(){ pista.classList.add('fuera'); }
+
+    // ---- gestos: arrastre con inercia, pellizco, doble toque, rueda
+    const pts = new Map();
+    let p0 = null, movido = 0, ultTap = 0, ultXY = [0, 0], tapPend = 0, vel = [0, 0], tPrev = 0;
+    function inicioGesto(){
+      const a = [...pts.values()];
+      if (a.length >= 2) { const m = [(a[0][0] + a[1][0]) / 2, (a[0][1] + a[1][1]) / 2]; p0 = {d: Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]) || 1, m, s, x, y}; }
+      else if (a.length === 1) p0 = {m: a[0].slice(), s, x, y};
+      else p0 = null;
+    }
+    const local = e => { const r = caja.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    caja.addEventListener('pointerdown', e => {
+      if (!listo) return;
+      try { caja.setPointerCapture(e.pointerId); } catch (err) {}
+      para(); pts.set(e.pointerId, local(e)); if (pts.size === 1) movido = 0; inicioGesto(); vel = [0, 0]; tPrev = performance.now();
+      caja.classList.add('arrastra'); tocado();
+    });
+    caja.addEventListener('pointermove', e => {
+      if (!pts.has(e.pointerId) || !p0) return;
+      const ant = pts.get(e.pointerId), act = local(e); pts.set(e.pointerId, act);
+      const a = [...pts.values()];
+      if (a.length >= 2 && p0.d) {
+        const m = [(a[0][0] + a[1][0]) / 2, (a[0][1] + a[1][1]) / 2], d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]);
+        const sN = Math.min(sMax, Math.max(sMin * 0.85, p0.s * d / p0.d)), k = sN / p0.s;
+        s = sN; x = m[0] - (p0.m[0] - p0.x) * k; y = m[1] - (p0.m[1] - p0.y) * k; movido += 99;
+        img.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) scale(' + s + ')';     // durante el pellizco se permite pasar un poco del limite
+      } else if (a.length === 1) {
+        const dx = act[0] - ant[0], dy = act[1] - ant[1], now = performance.now(), dt = Math.max(1, now - tPrev);
+        movido += Math.abs(dx) + Math.abs(dy); x += dx; y += dy;
+        vel = [0.8 * dx / dt + 0.2 * vel[0], 0.8 * dy / dt + 0.2 * vel[1]]; tPrev = now; pinta();
+      }
+    });
+    function suelta(e){
+      if (!pts.has(e.pointerId)) return;
+      const xy = pts.get(e.pointerId); pts.delete(e.pointerId);
+      if (pts.size) { inicioGesto(); return; }
+      caja.classList.remove('arrastra');
+      if (s < sMin) { animaA(sMin, W / 2, H / 2, 220); return; }
+      pinta();
+      if (movido < 8 && e.type === 'pointerup') {          // toque: doble = acercar / volver; simple (en tactil) = mostrar u ocultar controles
+        const now = performance.now();
+        if (now - ultTap < 320 && Math.hypot(xy[0] - ultXY[0], xy[1] - ultXY[1]) < 40) {
+          clearTimeout(tapPend); ultTap = 0;
+          if (s > sMin * 1.6) entera(320); else animaA(Math.max(sMin * 3, Math.max(W / iw, H / ih) * 1.4), xy[0], xy[1], 320);
+        } else {
+          ultTap = now; ultXY = xy;
+          if (tactil || exploradorEl.classList.contains('limpio')) tapPend = setTimeout(alternaLimpio, 330);
+        }
+        return;
+      }
+      if (performance.now() - tPrev < 90 && Math.hypot(vel[0], vel[1]) > 0.15 && !reducido) {     // inercia del arrastre
+        let v = vel.slice(), t = performance.now();
+        const paso = now => {
+          const dt = now - t; t = now; x += v[0] * dt; y += v[1] * dt; const f = Math.pow(0.94, dt / 16); v = [v[0] * f, v[1] * f];
+          const xa = x, ya = y; pinta(); if (x !== xa) v[0] = 0; if (y !== ya) v[1] = 0;
+          if (Math.hypot(v[0], v[1]) > 0.02) inercia = requestAnimationFrame(paso);
+        };
+        inercia = requestAnimationFrame(paso);
+      }
+    }
+    caja.addEventListener('pointerup', suelta); caja.addEventListener('pointercancel', suelta);
+    caja.addEventListener('wheel', e => {
+      if (!listo) return; e.preventDefault(); para(); tocado();
+      const xy = local(e), d = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;
+      zoomEn(s * Math.exp(-d * 0.0018), xy[0], xy[1]);
+    }, {passive:false});
+    caja.addEventListener('dblclick', e => e.preventDefault());
+    caja.addEventListener('keydown', e => {
+      if (!listo) return;
+      const k = e.key, paso = 60;
+      if (k === '+' || k === '=') animaA(s * 1.5, W / 2, H / 2, 200);
+      else if (k === '-') animaA(s / 1.5, W / 2, H / 2, 200);
+      else if (k === '0') entera(250);
+      else if (k === 'ArrowLeft') { x += paso; pinta(); } else if (k === 'ArrowRight') { x -= paso; pinta(); }
+      else if (k === 'ArrowUp') { y += paso; pinta(); } else if (k === 'ArrowDown') { y -= paso; pinta(); }
+      else return;
+      e.preventDefault(); tocado();
+    });
+    document.addEventListener('keydown', e => {
+      if (exploradorEl.hidden || e.key !== 'Escape') return;
+      if (exploradorEl.classList.contains('limpio')) alternaLimpio(); else volver();
+    });
+
+    // ---- mini-mapa: tocar o arrastrar lleva la vista a ese punto
+    let enMapa = false;
+    function irMapa(e, ms){ const r = mapaImg.getBoundingClientRect(); centraEn(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)), ms); }
+    mapa.addEventListener('pointerdown', e => { if (!listo) return; e.stopPropagation(); enMapa = true; try { mapa.setPointerCapture(e.pointerId); } catch (err) {} tocado(); irMapa(e, 220); });
+    mapa.addEventListener('pointermove', e => { if (enMapa) irMapa(e, 0); });
+    const fueraMapa = () => { enMapa = false; };
+    mapa.addEventListener('pointerup', fueraMapa); mapa.addEventListener('pointercancel', fueraMapa);
+
+    // ---- botones
+    function alternaLimpio(){ exploradorEl.classList.toggle('limpio'); }
+    $('#eMas').addEventListener('click', () => { tocado(); animaA(s * 1.6, W / 2, H / 2, 240); });
+    $('#eMenos').addEventListener('click', () => { tocado(); animaA(s / 1.6, W / 2, H / 2, 240); });
+    $('#eEntera').addEventListener('click', () => { tocado(); entera(300); });
+    $('#eLimpio').addEventListener('click', alternaLimpio);
+    const bP = $('#ePantalla'), de = document.documentElement;
+    bP.hidden = !(!!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && !!(de.requestFullscreen || de.webkitRequestFullscreen));
+    bP.addEventListener('click', () => {
+      try {
+        if (!(document.fullscreenElement || document.webkitFullscreenElement)) { const r = de.requestFullscreen || de.webkitRequestFullscreen; const pr = r.call(de); if (pr && pr.catch) pr.catch(() => {}); }
+        else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      } catch (err) {}
+    });
+    // al girar el telefono o cambiar el tamano se conserva el punto del centro y el acercamiento relativo
+    new ResizeObserver(() => {
+      if (!listo || exploradorEl.hidden) return;
+      const fx = (W / 2 - x) / s / iw, fy = (H / 2 - y) / s / ih, z = s / sMin;
+      medidas(); s = sMin * z; x = W / 2 - fx * iw * s; y = H / 2 - fy * ih * s; pinta();
+    }).observe(caja);
+
+    async function abre(c){
+      const g = ++gen; listo = false; para(); pts.clear();
+      exploradorEl.classList.remove('limpio');
+      $('#eCeja').textContent = [c.proyecto, c.concurso].filter(Boolean).join(' · ') || 'Imagen';
+      $('#eTitulo').textContent = c.titulo; const t = $('#eTexto'); t.textContent = c.texto || ''; t.hidden = !c.texto;
+      pista.textContent = tactil ? 'Arrastra para recorrer · pellizca o toca dos veces para acercar · un toque oculta los controles'
+                                 : 'Arrastra para recorrer · rueda o doble clic para acercar · el mini-mapa lleva a cualquier zona';
+      pista.classList.remove('fuera'); setTimeout(() => { if (g === gen) pista.classList.add('fuera'); }, 7000);
+      img.classList.remove('lista'); cargando.hidden = false;
+      const carga = u => new Promise((ok, mal) => { const im = new Image(); im.onload = () => ok(im); im.onerror = mal; im.src = u; if (im.decode) im.decode().then(() => ok(im)).catch(() => {}); });
+      try {
+        // primero la copia liviana (media, 2400 px) para abrir rapido; la completa (hasta 8K) baja detras y la reemplaza sin saltos
+        const u = await urlImagen(c.media || c.imagen); if (g !== gen) { suelta(u); return; }
+        const im = await carga(u); if (g !== gen) { suelta(u); return; }
+        urls.push(u); mapaImg.src = u; img.src = u;
+        iw = c.ancho || im.naturalWidth; ih = c.alto || im.naturalHeight;
+        img.style.width = iw + 'px'; img.style.height = ih + 'px';
+        medidas(); s = sMin; x = 0; y = 0; pinta();
+        listo = true; img.classList.add('lista'); caja.focus({preventScroll:true});
+        cargando.hidden = true;
+        if (c.media && c.imagen !== c.media) {
+          const uf = await urlImagen(c.imagen); if (g !== gen) { suelta(uf); return; }
+          await carga(uf); if (g !== gen) { suelta(uf); return; }
+          urls.push(uf); img.src = uf;
+        }
+      } catch (e) { if (g === gen && !listo) $('#eTitulo').textContent = 'No se pudo abrir la imagen. Revisa la conexión y vuelve a intentar.'; }
+      finally { if (g === gen) cargando.hidden = true; }
+    }
+    function cierra(){ gen++; listo = false; para(); pts.clear(); img.removeAttribute('src'); mapaImg.removeAttribute('src'); urls.forEach(suelta); urls = []; img.classList.remove('lista'); }
+    return {abre, cierra};
+  }
 
   // ================= VISOR =================
   let V = null;
