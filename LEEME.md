@@ -67,7 +67,7 @@ Saca los fotogramas, las vistas fijas y los rumbos del visor. En la app: arrastr
 
 ## Secciones de la galería
 
-La galería se ordena en Recorridos 360, Órbitas, Imágenes, Planos y Diseños técnicos; los botones de arriba muestran una sola sección o todas.
+La galería se ordena en Imágenes, Recorridos 360, Órbitas, Planos y Diseños técnicos; los botones de arriba muestran una sola sección o todas.
 
 ## Probar en local
 
