@@ -440,6 +440,19 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   }
   function leeGuardada(){ let v = null; try { v = sessionStorage.getItem(GUARDA); } catch (e) {} if (!v) { try { v = localStorage.getItem(GUARDA); } catch (e) {} } return v; }
   function olvidaClave(){ try { sessionStorage.removeItem(GUARDA); } catch (e) {} try { localStorage.removeItem(GUARDA); } catch (e) {} }
+  // ================= REGISTRO DE VISITAS (GoatCounter) =================
+  // Cada enlace puede llevar &de=<etiqueta> (a quien se le mando). La app anota en el contador, sin mostrar nada,
+  // lo que se abre: /<etiqueta>/<que>. CONTADOR vacio = no se anota nada.
+  const CONTADOR = '';
+  let quien = '';
+  try { quien = sessionStorage.getItem('r360-de') || ''; } catch (e) {}
+  function anota(ruta, titulo){
+    if (!CONTADOR || !cifrado) return;                // solo el sitio publicado; nunca en local
+    const u = CONTADOR + '?p=' + encodeURIComponent('/' + (quien || 'sin-enlace') + '/' + ruta) +
+              '&t=' + encodeURIComponent((quien || 'sin enlace') + ' · ' + titulo) + '&rnd=' + Math.random().toString(36).slice(2);
+    try { if (!(navigator.sendBeacon && navigator.sendBeacon(u))) new Image().src = u; } catch (e) {}
+  }
+  const etiqueta = t => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
   function esc(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c])); }
   function fechaTxt(f){ if (!f) return ''; try { return new Date(f + 'T12:00:00').toLocaleDateString('es-CO', {day:'numeric', month:'short', year:'numeric'}); } catch (e) { return f; } }
 
@@ -533,6 +546,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     cierraAbierto();
     abierto = c.id; galeria.hidden = true; visorEl.hidden = false; document.body.classList.add('en-visor'); window.scrollTo(0, 0);
     document.title = c.titulo + ' · 360';
+    anota('360/' + c.id + (visorEl.classList.contains('sin-rotulos') ? '/sin-rotulos' : ''), 'abrió el 360 · ' + c.titulo);
     if (!V) V = creaVisor();
     try { const R = await leeJSON(BASE + c.id + '/recorrido.json'); if (abierto === c.id) V.abre(R); }
     catch (e) { V.avisa('No se pudo abrir este recorrido. Revisa la conexión y vuelve a intentar.'); }
@@ -545,6 +559,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     cierraAbierto();
     abierto = c.id; galeria.hidden = true; exploradorEl.hidden = false; document.body.classList.add('en-visor'); window.scrollTo(0, 0);
     document.title = c.titulo;
+    anota(c.tipo + '/' + c.id, 'abrió ' + ({imagen:'la imagen', planos:'los planos', tecnico:'los diseños técnicos'}[c.tipo] || '') + ' · ' + c.titulo);
     if (!E) E = creaExplorador();
     E.abre(c, lam);
   }
@@ -557,6 +572,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     cierraAbierto();
     abierto = c.id; galeria.hidden = true; orbitaEl.hidden = false; document.body.classList.add('en-visor'); window.scrollTo(0, 0);
     document.title = c.titulo;
+    anota('orbita/' + c.id, 'abrió la órbita · ' + c.titulo);
     if (!O) O = creaOrbita();
     O.abre(c);
   }
@@ -977,6 +993,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       document.title = varias ? (h.corto || h.codigo || '') + ' · ' + C.titulo : C.titulo;
       tira.querySelectorAll('button').forEach(b => { const on = +b.dataset.i === i; b.setAttribute('aria-current', String(on)); if (on) b.scrollIntoView({block:'nearest', inline:'center', behavior: reducido ? 'auto' : 'smooth'}); });
       if (varias && h.codigo) { try { history.replaceState(history.state, '', '#' + encodeURIComponent(C.id) + '?l=' + encodeURIComponent(h.codigo)); } catch (e) {} }
+      if (varias) setTimeout(() => { if (g === gen) anota(C.tipo + '/' + C.id + '/' + (h.codigo || i + 1), 'vio ' + (h.codigo ? h.codigo + ' · ' : '') + (h.titulo || '')); }, 1500);
       const espera = setTimeout(() => { if (g === gen) cargando.hidden = false; }, 250);
       if (listo) img.classList.add('cambia');
       try {
@@ -1324,6 +1341,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
         const [im] = await Promise.all([imagen(i), new Promise(r => setTimeout(r, reducido ? 0 : 220))]);
         if (g !== gen) return;
         cur = i; foco = -1; await carga(i, im);
+        anota('360/' + R.id + '/' + P[i].id, 'fue al punto ' + P[i].titulo);
         yaw = envuelve(P[i].Ac - a) * D2R; pitch = 0; zoomL = zoomInicial(); ajustaFov(); desfaseGiro = null;
         armaFichas(); textos(); dibuja();
       } catch (err) { avisa('No se pudo cargar ese panorama.'); setTimeout(() => avisa(''), 2600); }
@@ -1517,7 +1535,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   async function abreIndice(){
     const ind = JSON.parse(new TextDecoder().decode(await bajaCifrado(acceso.indice)));
     catalogo = ind.catalogo || []; mapa = ind.archivos || {};
-    entrada.hidden = true; bSalir.hidden = false; pintaGaleria(); ruta();
+    entrada.hidden = true; bSalir.hidden = false; anota('entrada', 'entró a la galería'); pintaGaleria(); ruta();
   }
   function pideEntrada(msg){
     clave = null; galeria.hidden = true; visorEl.hidden = true; entrada.hidden = false; error.textContent = msg || '';
@@ -1548,6 +1566,11 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       if (!(window.crypto && crypto.subtle)) { pideEntrada('Este navegador no puede descifrar los recorridos. Ábrelo con https en Safari o Chrome.'); bEntrar.disabled = true; return; }
       // enlace con llave (#k=...): entra sin escribir la contrasena. Lo que va despues de # no sale del navegador;
       // la llave se quita de la barra de direcciones y queda solo para esta pestana. Cambiar la contrasena lo invalida.
+      const de = /(?:^#|&)de=([^&]+)/.exec(location.hash);
+      if (de) {
+        try { quien = etiqueta(decodeURIComponent(de[1])); sessionStorage.setItem('r360-de', quien); } catch (e) {}
+        if (!/(?:^#|&)k=/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+      }
       const enl = /(?:^#|&)k=([A-Za-z0-9_\-+\/=]+)/.exec(location.hash);
       if (enl) {
         let raw = enl[1].replace(/-/g, '+').replace(/_/g, '/'); while (raw.length % 4) raw += '=';

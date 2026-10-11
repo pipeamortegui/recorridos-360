@@ -11,7 +11,7 @@ Enlace privado en Claude (sin contraseña, solo tu cuenta): https://claude.ai/ar
 - En GitHub solo se suben los archivos cifrados (AES-256-GCM). Los panoramas, las miniaturas, las portadas, las notas y hasta el nombre de cada proyecto quedan ilegibles, con nombres aleatorios.
 - La contraseña no se guarda en ningún archivo. La app la pide y descifra todo en el navegador.
 - "Recordar en este equipo" guarda la llave solo en ese navegador. El botón **Cerrar acceso** de la galería la borra (úsalo si lo abriste en un equipo ajeno).
-- No hay registro de quién entra. Para quitarle el acceso a alguien, cambia la contraseña (`python publicar.py --nueva-clave --subir`).
+- El contador de visitas registra lo que abre cada enlace (ver abajo). Para quitarle el acceso a alguien, cambia la contraseña (`python publicar.py --nueva-clave --subir`).
 - Usa una frase larga (3 o 4 palabras). La seguridad depende de que no se pueda adivinar.
 
 ## Compartir sin contraseña (enlace con llave)
@@ -21,6 +21,16 @@ python publicar.py --enlace
 ```
 
 Pide la contraseña e imprime un enlace que termina en `#k=...`: quien lo abra entra directo, sin escribir nada. Lo que va después de `#` no sale del navegador (GitHub no lo ve) y la app lo quita de la barra de direcciones. Todo sigue cifrado en GitHub. Ojo: cualquiera que reciba el enlace puede entrar. Para anularlo, cambia la contraseña: `python publicar.py --nueva-clave --subir`.
+
+## Quién entra y qué abre (contador de visitas)
+
+La app anota en un contador de GoatCounter, sin mostrar nada en pantalla, lo que abre cada visitante: la entrada, cada elemento, cada punto del 360 y cada lámina en la que se queda al menos 1,5 s. Cada persona recibe su propio enlace:
+
+```
+python publicar.py --enlace --para "Cliente A"
+```
+
+y en el panel de GoatCounter sus visitas salen como `/cliente-a/...`. Quien entra con la contraseña sale como `/sin-enlace/...`. La dirección del contador está en `web/index.html` (`const CONTADOR`); vacía, no se anota nada.
 
 ## Carpetas
 

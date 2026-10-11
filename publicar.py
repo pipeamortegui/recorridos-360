@@ -7,6 +7,9 @@ Uso:
     python publicar.py --ventana       pide la contrasena en una ventana de Windows (sin terminal)
     python publicar.py --enlace        imprime el enlace con llave: entra sin escribir la contrasena
                                        (deja de servir cuando cambias la contrasena con --nueva-clave)
+    python publicar.py --enlace --para "Cliente A"
+                                       el enlace lleva la etiqueta de esa persona: el contador de visitas
+                                       anota lo que abre como /cliente-a/...
 
 Que se publica:
   - sitio/index.html, iconos y manifiesto (la app, sin ningun dato del proyecto).
@@ -16,7 +19,7 @@ Que se publica:
 Los nombres de los .bin son aleatorios: ni siquiera el nombre del proyecto queda a la vista.
 Solo se cifra lo que cambio; lo demas se reutiliza, asi git no sube de nuevo los panoramas.
 """
-import argparse, base64, getpass, hashlib, json, os, secrets, shutil, subprocess, sys
+import argparse, base64, getpass, hashlib, json, os, re, secrets, shutil, subprocess, sys, unicodedata
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.exceptions import InvalidTag
 
@@ -108,6 +111,7 @@ def main():
     ap.add_argument("--nueva-clave", action="store_true", help="cambiar la contrasena y volver a cifrar todo")
     ap.add_argument("--ventana", action="store_true", help="pedir la contrasena en una ventana en vez de la terminal")
     ap.add_argument("--enlace", action="store_true", help="imprimir el enlace con llave (entra sin contrasena)")
+    ap.add_argument("--para", default="", help='con --enlace: a quien se le manda (p. ej. "Cliente A"); el contador lo registra con ese nombre')
     a = ap.parse_args()
     global VENTANA
     VENTANA = a.ventana
@@ -123,7 +127,14 @@ def main():
         except InvalidTag:
             sys.exit("Esa no es la contrasena con la que esta publicado el sitio.")
         # la llave va despues de #: el navegador no la envia a ningun servidor
-        print(URL + "#k=" + base64.urlsafe_b64encode(clave).decode().rstrip("="))
+        enlace = URL + "#k=" + base64.urlsafe_b64encode(clave).decode().rstrip("=")
+        if a.para:
+            # la misma etiqueta que arma la app: minusculas, sin tildes, guiones
+            et = unicodedata.normalize("NFD", a.para.lower())
+            et = re.sub(r"[^a-z0-9]+", "-", "".join(c for c in et if not unicodedata.combining(c))).strip("-")[:40]
+            enlace += "&de=" + et
+            print(f"Para: {a.para}  (en el contador: /{et}/...)")
+        print(enlace)
         print("Quien tenga este enlace entra sin contrasena. Para anularlo: python publicar.py --nueva-clave --subir")
         return
 
