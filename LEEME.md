@@ -11,7 +11,7 @@ Enlace privado en Claude (sin contraseña, solo tu cuenta): https://claude.ai/ar
 - En GitHub solo se suben los archivos cifrados (AES-256-GCM). Los panoramas, las miniaturas, las portadas, las notas y hasta el nombre de cada proyecto quedan ilegibles, con nombres aleatorios.
 - La contraseña no se guarda en ningún archivo. La app la pide y descifra todo en el navegador.
 - "Recordar en este equipo" guarda la llave solo en ese navegador. El botón **Cerrar acceso** de la galería la borra (úsalo si lo abriste en un equipo ajeno).
-- El contador de visitas registra lo que abre cada enlace (ver abajo). Para quitarle el acceso a alguien, cambia la contraseña (`python publicar.py --nueva-clave --subir`).
+- Los avisos de visitas dicen quién entró y qué miró (ver abajo). Para quitarle el acceso a alguien, cambia la contraseña (`python publicar.py --nueva-clave --subir`).
 - Usa una frase larga (3 o 4 palabras). La seguridad depende de que no se pueda adivinar.
 
 ## Compartir sin contraseña (enlace con llave)
@@ -22,15 +22,18 @@ python publicar.py --enlace
 
 Pide la contraseña e imprime un enlace que termina en `#k=...`: quien lo abra entra directo, sin escribir nada. Lo que va después de `#` no sale del navegador (GitHub no lo ve) y la app lo quita de la barra de direcciones. Todo sigue cifrado en GitHub. Ojo: cualquiera que reciba el enlace puede entrar. Para anularlo, cambia la contraseña: `python publicar.py --nueva-clave --subir`.
 
-## Quién entra y qué abre (contador de visitas)
+## Quién entra y qué mira (avisos al celular, sin cuentas)
 
-La app anota en un contador de GoatCounter, sin mostrar nada en pantalla, lo que abre cada visitante: la entrada, cada elemento, cada punto del 360 y cada lámina en la que se queda al menos 1,5 s. Cada persona recibe su propio enlace:
+La app avisa al celular por **ntfy** (app gratuita, sin registro), sin mostrar nada al visitante: al entrar llega "Entró Cliente A · iPhone", y al salir o cambiar de app, un resumen con lo que miró (imagen, cada lámina en la que se quedó más de 1,5 s, cada punto del 360, la órbita) y los minutos.
 
-```
-python publicar.py --enlace --para "Cliente A"
-```
+- En el celular: instala **ntfy**, toca **+** y suscríbete al tema (está guardado, cifrado, en el índice; se pone o cambia con `python publicar.py --aviso TEMA`, y `--aviso no` lo apaga).
+- Un enlace por persona: `python publicar.py --enlace --para "Cliente A"`. Quien entra con la contraseña o con un enlace sin nombre sale como "alguien sin enlace propio".
+- Para que tus propias visitas no avisen, abre una vez en cada equipo tu enlace con `--para yo`.
+- Los bloqueadores de anuncios pueden frenar algún aviso, y lo anterior a activarlo no se puede recuperar.
 
-y en el panel de GoatCounter sus visitas salen como `/cliente-a/...`. Quien entra con la contraseña sale como `/sin-enlace/...`. La dirección del contador está en `web/index.html` (`const CONTADOR`); vacía, no se anota nada.
+## Publicar desde otro equipo
+
+`publicar.py` baja lo último de GitHub y recupera del sitio publicado lo que no esté en `web/recorridos` de ese equipo, así que publicar desde otro PC no borra nada. Para quitar algo a propósito: `python publicar.py --quitar ID --subir`. Al cambiar la contraseña (`--nueva-clave`) pide primero la actual y luego la nueva.
 
 ## Carpetas
 
