@@ -7,6 +7,14 @@ Uso:
     python publicar.py --ventana       pide la contrasena en una ventana de Windows (sin terminal)
     python publicar.py --enlace        imprime el enlace con llave: entra sin escribir la contrasena
                                        (deja de servir cuando cambias la contrasena con --nueva-clave)
+    python publicar.py --enlace --para "Cliente A"
+                                       el enlace lleva el nombre de esa persona: los avisos dicen quien entro
+    python publicar.py --aviso TEMA    avisos de visitas al celular por ntfy (app gratuita, sin cuenta);
+                                       --aviso no los apaga. El tema queda dentro del indice cifrado.
+    python publicar.py --quitar ID     quita ese recorrido, imagen, orbita o juego de laminas del sitio
+
+Antes de publicar baja lo ultimo de GitHub (git pull) y recupera del sitio publicado lo que no este en
+web/recorridos de este equipo (lo descifra con la contrasena): publicar desde otro equipo no borra nada.
 
 Que se publica:
   - sitio/index.html, iconos y manifiesto (la app, sin ningun dato del proyecto).
@@ -16,7 +24,7 @@ Que se publica:
 Los nombres de los .bin son aleatorios: ni siquiera el nombre del proyecto queda a la vista.
 Solo se cifra lo que cambio; lo demas se reutiliza, asi git no sube de nuevo los panoramas.
 """
-import argparse, base64, getpass, hashlib, json, os, secrets, shutil, subprocess, sys
+import argparse, base64, getpass, hashlib, json, os, re, secrets, shutil, subprocess, sys
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.exceptions import InvalidTag
 
@@ -42,7 +50,7 @@ def descifra(clave, blob):
     return AESGCM(clave).decrypt(blob[:12], blob[12:], None)
 
 
-def pide_clave_ventana(confirmar):
+def pide_clave_ventana(confirmar, texto=None):
     """Ventana de Windows para escribir la contrasena (sin terminal)."""
     import tkinter as tk
     raiz = tk.Tk()
@@ -52,7 +60,7 @@ def pide_clave_ventana(confirmar):
     raiz.attributes("-topmost", True)
     fuente, tenue, texto, oro = ("Segoe UI", 11), "#a3aca9", "#ece7df", "#d9b36c"
     tk.Label(raiz, text="Contraseña de acceso a los recorridos", font=("Segoe UI", 13, "bold"), bg="#12181b", fg=texto).pack(anchor="w")
-    tk.Label(raiz, text=("Mínimo 10 caracteres. Mejor una frase de 3 o 4 palabras.\nGuárdala bien: si se olvida, hay que publicar con una nueva."
+    tk.Label(raiz, text=texto or ("Mínimo 10 caracteres. Mejor una frase de 3 o 4 palabras.\nGuárdala bien: si se olvida, hay que publicar con una nueva."
                          if confirmar else "Escribe la contraseña con la que publicaste."),
              font=("Segoe UI", 10), bg="#12181b", fg=tenue, justify="left").pack(anchor="w", pady=(4, 12))
     campos = []
@@ -87,13 +95,13 @@ def pide_clave_ventana(confirmar):
     return res["pw"]
 
 
-def pide_clave(confirmar):
-    pw = os.environ.get("RECORRIDOS360_CLAVE")
+def pide_clave(confirmar, entorno="RECORRIDOS360_CLAVE", texto=None):
+    pw = os.environ.get(entorno)
     if pw:
         return pw
     if VENTANA:
-        return pide_clave_ventana(confirmar)
-    pw = getpass.getpass("Contrasena de acceso: ")
+        return pide_clave_ventana(confirmar, texto)
+    pw = getpass.getpass((texto or "Contrasena de acceso") + ": ")
     if confirmar:
         if len(pw) < 10:
             sys.exit("Usa al menos 10 caracteres (mejor una frase de 3 o 4 palabras).")
@@ -108,6 +116,9 @@ def main():
     ap.add_argument("--nueva-clave", action="store_true", help="cambiar la contrasena y volver a cifrar todo")
     ap.add_argument("--ventana", action="store_true", help="pedir la contrasena en una ventana en vez de la terminal")
     ap.add_argument("--enlace", action="store_true", help="imprimir el enlace con llave (entra sin contrasena)")
+    ap.add_argument("--para", default="", help='con --enlace: a quien se le manda (p. ej. "Cliente A"); los avisos dicen ese nombre')
+    ap.add_argument("--aviso", default=None, help='tema de ntfy para los avisos de visitas al celular; "no" los apaga')
+    ap.add_argument("--quitar", action="append", default=[], help="id a quitar del sitio (se puede repetir)")
     a = ap.parse_args()
     global VENTANA
     VENTANA = a.ventana
@@ -123,39 +134,85 @@ def main():
         except InvalidTag:
             sys.exit("Esa no es la contrasena con la que esta publicado el sitio.")
         # la llave va despues de #: el navegador no la envia a ningun servidor
-        print(URL + "#k=" + base64.urlsafe_b64encode(clave).decode().rstrip("="))
+        enlace = URL + "#k=" + base64.urlsafe_b64encode(clave).decode().rstrip("=")
+        if a.para:          # el nombre tal cual: los avisos al celular dicen "Entro <nombre>"
+            from urllib.parse import quote
+            enlace += "&de=" + quote(a.para.strip()[:40], safe="")
+            print(f"Para: {a.para.strip()[:40]}")
+        print(enlace)
         print("Quien tenga este enlace entra sin contrasena. Para anularlo: python publicar.py --nueva-clave --subir")
         return
 
     catalogo_ruta = os.path.join(RECORRIDOS, "catalogo.json")
-    if not os.path.exists(catalogo_ruta):
-        sys.exit("No hay recorridos: primero corre importar_visor.py.")
+    os.makedirs(RECORRIDOS, exist_ok=True)
     os.makedirs(DATOS, exist_ok=True)
 
+    if a.subir:      # lo ultimo publicado, para no pisar lo que se subio desde otro equipo
+        r = subprocess.run(["git", "pull", "--ff-only", "-q"], cwd=RAIZ)
+        if r.returncode != 0:
+            sys.exit("No se pudo bajar lo ultimo de GitHub (git pull). Revisa la conexion o los cambios sin guardar.")
+
     nueva = a.nueva_clave or not os.path.exists(ACCESO)
+    ruta_indice = os.path.join(DATOS, INDICE)
+    ind_previo, clave_previa, acceso_previo = {}, None, None
+    if os.path.exists(ACCESO) and os.path.exists(ruta_indice):
+        acceso_previo = json.load(open(ACCESO, encoding="utf-8"))
+        pw0 = pide_clave(False, texto="Contrasena ACTUAL" if nueva else None)
+        clave_previa = hashlib.pbkdf2_hmac("sha256", pw0.encode("utf-8"), base64.b64decode(acceso_previo["sal"]), acceso_previo["iter"], 32)
+        try:
+            ind_previo = json.loads(descifra(clave_previa, open(ruta_indice, "rb").read()))
+        except InvalidTag:
+            sys.exit("Esa no es la contrasena con la que esta publicado el sitio.")
     if nueva:
         acceso = {"v": 1, "sal": base64.b64encode(secrets.token_bytes(16)).decode(), "iter": ITER, "indice": INDICE}
         print("Contrasena NUEVA: todo se vuelve a cifrar.")
-    else:
+        pw = pide_clave(True, entorno="RECORRIDOS360_CLAVE_NUEVA" if ind_previo else "RECORRIDOS360_CLAVE",
+                        texto="Contrasena NUEVA" if ind_previo else None)
+        clave = hashlib.pbkdf2_hmac("sha256", pw.encode("utf-8"), base64.b64decode(acceso["sal"]), acceso["iter"], 32)
+    elif clave_previa is not None:
+        acceso, clave = acceso_previo, clave_previa
+    else:            # hay acceso.json pero no indice: se cifra con la contrasena de siempre
         acceso = json.load(open(ACCESO, encoding="utf-8"))
-    pw = pide_clave(confirmar=nueva)
-    clave = hashlib.pbkdf2_hmac("sha256", pw.encode("utf-8"), base64.b64decode(acceso["sal"]), acceso["iter"], 32)
+        pw = pide_clave(False)
+        clave = hashlib.pbkdf2_hmac("sha256", pw.encode("utf-8"), base64.b64decode(acceso["sal"]), acceso["iter"], 32)
 
-    # lo ya publicado (para reutilizar lo que no cambio)
-    previo = {}
-    ruta_indice = os.path.join(DATOS, INDICE)
-    if not nueva and os.path.exists(ruta_indice):
-        try:
-            previo = json.loads(descifra(clave, open(ruta_indice, "rb").read()))["archivos"]
-        except InvalidTag:
-            sys.exit("Esa no es la contrasena con la que esta publicado el sitio.\n"
-                     "Si quieres cambiarla, corre: python publicar.py --nueva-clave")
+    # recuperar del sitio lo que este equipo no tiene (lo subido desde otro equipo); --quitar lo descarta
+    quitar = set(a.quitar)
+    catalogo = json.load(open(catalogo_ruta, encoding="utf-8")) if os.path.exists(catalogo_ruta) else []
+    locales = {c["id"] for c in catalogo}
+    recuperados = 0
+    for c in ind_previo.get("catalogo", []):
+        if c["id"] in locales or c["id"] in quitar:
+            continue
+        for logica, (bin_, sha) in ind_previo.get("archivos", {}).items():
+            if logica.startswith(f"recorridos/{c['id']}/"):
+                ruta = os.path.join(WEB, *logica.split("/"))
+                os.makedirs(os.path.dirname(ruta), exist_ok=True)
+                open(ruta, "wb").write(descifra(clave_previa, open(os.path.join(DATOS, bin_), "rb").read()))
+        catalogo.append(c); recuperados += 1
+    for ident in quitar:
+        catalogo = [c for c in catalogo if c["id"] != ident]
+        shutil.rmtree(os.path.join(RECORRIDOS, ident), ignore_errors=True)
+    if not catalogo:
+        sys.exit("No hay recorridos: primero corre importar_visor.py.")
+    catalogo.sort(key=lambda c: c.get("fecha", ""), reverse=True)
+    with open(catalogo_ruta, "w", encoding="utf-8") as f:
+        json.dump(catalogo, f, ensure_ascii=False, indent=1)
+    if recuperados:
+        print(f"Recuperados del sitio publicado: {recuperados} (no estaban en este equipo).")
+
+    # lo ya publicado con esta misma clave (para reutilizar lo que no cambio)
+    previo = ind_previo.get("archivos", {}) if not nueva else {}
+    aviso = ind_previo.get("aviso")
+    if a.aviso is not None:
+        aviso = None if a.aviso.lower() in ("no", "") else re.sub(r"[^A-Za-z0-9_-]", "", a.aviso)
 
     # cifrar cada archivo de cada recorrido
     archivos, nuevos, reusados = {}, 0, 0
+    vigentes = {c["id"] for c in catalogo}
     for ident in sorted(os.listdir(RECORRIDOS)):
         carpeta = os.path.join(RECORRIDOS, ident)
-        if not os.path.isdir(carpeta):
+        if not os.path.isdir(carpeta) or ident not in vigentes:
             continue
         for nombre in sorted(os.listdir(carpeta)):
             logica = f"recorridos/{ident}/{nombre}"
@@ -169,7 +226,9 @@ def main():
             open(os.path.join(DATOS, bin_), "wb").write(cifra(clave, datos))
             archivos[logica] = [bin_, sha]; nuevos += 1
 
-    indice = {"catalogo": json.load(open(catalogo_ruta, encoding="utf-8")), "archivos": archivos}
+    indice = {"catalogo": catalogo, "archivos": archivos}
+    if aviso:
+        indice["aviso"] = aviso        # tema de ntfy: va cifrado, solo lo lee quien entra
     open(ruta_indice, "wb").write(cifra(clave, json.dumps(indice, ensure_ascii=False).encode("utf-8")))
     with open(ACCESO, "w", encoding="utf-8") as f:
         json.dump(acceso, f)
@@ -185,7 +244,8 @@ def main():
         shutil.copy2(os.path.join(WEB, n), os.path.join(SITIO, n))
     open(os.path.join(SITIO, ".nojekyll"), "w").close()
 
-    print(f"OK  sitio/ listo: {len(indice['catalogo'])} recorrido(s), {nuevos} archivo(s) cifrados, {reusados} reutilizados, {borrados} borrados.")
+    print(f"OK  sitio/ listo: {len(indice['catalogo'])} recorrido(s), {nuevos} archivo(s) cifrados, {reusados} reutilizados, {borrados} borrados."
+          + (f" Avisos al celular: ntfy, tema {aviso}." if aviso else ""))
 
     if a.subir:
         def git(*args):

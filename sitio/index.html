@@ -440,6 +440,35 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   }
   function leeGuardada(){ let v = null; try { v = sessionStorage.getItem(GUARDA); } catch (e) {} if (!v) { try { v = localStorage.getItem(GUARDA); } catch (e) {} } return v; }
   function olvidaClave(){ try { sessionStorage.removeItem(GUARDA); } catch (e) {} try { localStorage.removeItem(GUARDA); } catch (e) {} }
+  // ================= AVISOS DE VISITAS (ntfy, sin cuentas) =================
+  // Si el indice cifrado trae "aviso" (un tema de ntfy.sh), la app avisa al celular del dueno sin mostrar nada:
+  // al entrar, "Entro <quien>"; al salir o cambiar de app, el resumen de lo que miro. <quien> viene del enlace (&de=);
+  // con #de=yo en el equipo del dueno no se avisa nada.
+  let AVISO = null, quien = '', vistos = [], enviados = 0, t0 = Date.now();
+  try { quien = sessionStorage.getItem('r360-de') || localStorage.getItem('r360-de') || ''; } catch (e) {}
+  function aparato(){
+    const u = navigator.userAgent;
+    return /iPhone/.test(u) ? 'iPhone' : (/iPad/.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1)) ? 'iPad' : /Android/.test(u) ? 'Android' : /Mac/.test(u) ? 'Mac' : /Windows/.test(u) ? 'Windows' : 'otro equipo';
+  }
+  const nombre = () => quien || 'alguien sin enlace propio';
+  function manda(titulo, texto, icono){
+    if (!AVISO || quien.toLowerCase() === 'yo') return;
+    const u = 'https://ntfy.sh/' + encodeURIComponent(AVISO) + '?title=' + encodeURIComponent(titulo) + '&tags=' + icono;
+    try { if (!(navigator.sendBeacon && navigator.sendBeacon(u, texto))) fetch(u, {method:'POST', body:texto, keepalive:true, mode:'no-cors'}).catch(() => {}); } catch (e) {}
+  }
+  function anota(que){
+    if (!AVISO) return;
+    if (que === 'entrada') { t0 = Date.now(); manda('Entró ' + nombre(), 'Abrió la galería · ' + aparato(), 'eyes'); return; }
+    if (vistos[vistos.length - 1] !== que) vistos.push(que);
+  }
+  function resume(){
+    if (!AVISO || vistos.length === enviados) return;
+    const nuevos = vistos.slice(enviados); enviados = vistos.length;
+    const min = Math.max(1, Math.round((Date.now() - t0) / 60000));
+    manda(nombre() + ' miró', nuevos.map(v => v.startsWith('   ') ? '      ◦ ' + v.trim() : '• ' + v).join('\n') + '\n' + min + ' min en la página · ' + aparato(), 'page_facing_up');
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') resume(); });
+  window.addEventListener('pagehide', resume);
   function esc(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c])); }
   function fechaTxt(f){ if (!f) return ''; try { return new Date(f + 'T12:00:00').toLocaleDateString('es-CO', {day:'numeric', month:'short', year:'numeric'}); } catch (e) { return f; } }
 
@@ -533,6 +562,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     cierraAbierto();
     abierto = c.id; galeria.hidden = true; visorEl.hidden = false; document.body.classList.add('en-visor'); window.scrollTo(0, 0);
     document.title = c.titulo + ' · 360';
+    anota('360 · ' + c.titulo + (visorEl.classList.contains('sin-rotulos') ? ' (sin rótulos)' : ''));
     if (!V) V = creaVisor();
     try { const R = await leeJSON(BASE + c.id + '/recorrido.json'); if (abierto === c.id) V.abre(R); }
     catch (e) { V.avisa('No se pudo abrir este recorrido. Revisa la conexión y vuelve a intentar.'); }
@@ -545,6 +575,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     cierraAbierto();
     abierto = c.id; galeria.hidden = true; exploradorEl.hidden = false; document.body.classList.add('en-visor'); window.scrollTo(0, 0);
     document.title = c.titulo;
+    anota(({imagen:'Imagen', planos:'Planos', tecnico:'Diseños técnicos'}[c.tipo] || '') + ' · ' + c.titulo);
     if (!E) E = creaExplorador();
     E.abre(c, lam);
   }
@@ -557,6 +588,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
     cierraAbierto();
     abierto = c.id; galeria.hidden = true; orbitaEl.hidden = false; document.body.classList.add('en-visor'); window.scrollTo(0, 0);
     document.title = c.titulo;
+    anota('Órbita · ' + c.titulo);
     if (!O) O = creaOrbita();
     O.abre(c);
   }
@@ -977,6 +1009,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       document.title = varias ? (h.corto || h.codigo || '') + ' · ' + C.titulo : C.titulo;
       tira.querySelectorAll('button').forEach(b => { const on = +b.dataset.i === i; b.setAttribute('aria-current', String(on)); if (on) b.scrollIntoView({block:'nearest', inline:'center', behavior: reducido ? 'auto' : 'smooth'}); });
       if (varias && h.codigo) { try { history.replaceState(history.state, '', '#' + encodeURIComponent(C.id) + '?l=' + encodeURIComponent(h.codigo)); } catch (e) {} }
+      if (varias) setTimeout(() => { if (g === gen) anota('   lámina ' + (h.corto || h.codigo || i + 1) + ' · ' + (h.titulo || '')); }, 1500);
       const espera = setTimeout(() => { if (g === gen) cargando.hidden = false; }, 250);
       if (listo) img.classList.add('cambia');
       try {
@@ -1324,6 +1357,7 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
         const [im] = await Promise.all([imagen(i), new Promise(r => setTimeout(r, reducido ? 0 : 220))]);
         if (g !== gen) return;
         cur = i; foco = -1; await carga(i, im);
+        anota('   punto ' + P[i].titulo);
         yaw = envuelve(P[i].Ac - a) * D2R; pitch = 0; zoomL = zoomInicial(); ajustaFov(); desfaseGiro = null;
         armaFichas(); textos(); dibuja();
       } catch (err) { avisa('No se pudo cargar ese panorama.'); setTimeout(() => avisa(''), 2600); }
@@ -1516,8 +1550,8 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
   const entrada = $('#entrada'), fEntrada = $('#fEntrada'), campo = $('#clave'), bEntrar = $('#bEntrar'), error = $('#error'), bSalir = $('#bSalir');
   async function abreIndice(){
     const ind = JSON.parse(new TextDecoder().decode(await bajaCifrado(acceso.indice)));
-    catalogo = ind.catalogo || []; mapa = ind.archivos || {};
-    entrada.hidden = true; bSalir.hidden = false; pintaGaleria(); ruta();
+    catalogo = ind.catalogo || []; mapa = ind.archivos || {}; AVISO = ind.aviso || null;
+    entrada.hidden = true; bSalir.hidden = false; anota('entrada'); pintaGaleria(); ruta();
   }
   function pideEntrada(msg){
     clave = null; galeria.hidden = true; visorEl.hidden = true; entrada.hidden = false; error.textContent = msg || '';
@@ -1548,6 +1582,11 @@ svg.ic { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1
       if (!(window.crypto && crypto.subtle)) { pideEntrada('Este navegador no puede descifrar los recorridos. Ábrelo con https en Safari o Chrome.'); bEntrar.disabled = true; return; }
       // enlace con llave (#k=...): entra sin escribir la contrasena. Lo que va despues de # no sale del navegador;
       // la llave se quita de la barra de direcciones y queda solo para esta pestana. Cambiar la contrasena lo invalida.
+      const de = /(?:^#|&)de=([^&]+)/.exec(location.hash);
+      if (de) {
+        try { quien = decodeURIComponent(de[1].replace(/\+/g, ' ')).replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 40); sessionStorage.setItem('r360-de', quien); localStorage.setItem('r360-de', quien); } catch (e) {}
+        if (!/(?:^#|&)k=/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+      }
       const enl = /(?:^#|&)k=([A-Za-z0-9_\-+\/=]+)/.exec(location.hash);
       if (enl) {
         let raw = enl[1].replace(/-/g, '+').replace(/_/g, '/'); while (raw.length % 4) raw += '=';
